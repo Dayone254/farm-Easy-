@@ -25,12 +25,12 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#f5f5f7",
-          foreground: "#1d1d1f",
+          DEFAULT: "#2F5233",
+          foreground: "#F5F5DC",
         },
         secondary: {
-          DEFAULT: "#1d1d1f",
-          foreground: "#f5f5f7",
+          DEFAULT: "#1F371F",
+          foreground: "#F5F5DC",
         },
         success: {
           DEFAULT: "#34c759",
@@ -45,51 +45,14 @@ export default {
           foreground: "#ffffff",
         },
         accent: {
-          DEFAULT: "#06c",
-          foreground: "#ffffff",
+          DEFAULT: "#4A7856",
+          foreground: "#F5F5DC",
         },
         card: {
           DEFAULT: "rgba(255, 255, 255, 0.8)",
-          foreground: "#1d1d1f",
+          foreground: "#2F5233",
         },
-      },
-      borderRadius: {
-        lg: "1rem",
-        md: "0.75rem",
-        sm: "0.5rem",
-      },
-      keyframes: {
-        "fade-up": {
-          "0%": {
-            opacity: "0",
-            transform: "translateY(10px)",
-          },
-          "100%": {
-            opacity: "1",
-            transform: "translateY(0)",
-          },
-        },
-        "fade-in": {
-          "0%": {
-            opacity: "0",
-          },
-          "100%": {
-            opacity: "1",
-          },
-        },
-        "scale-up": {
-          "0%": {
-            transform: "scale(0.95)",
-          },
-          "100%": {
-            transform: "scale(1)",
-          },
-        },
-      },
-      animation: {
-        "fade-up": "fade-up 0.5s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
-        "scale-up": "scale-up 0.3s ease-out",
+        cream: "#F5F5DC",
       },
     },
   },
