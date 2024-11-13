@@ -34,7 +34,9 @@
     @apply bg-background text-foreground min-h-screen;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
 
+@layer components {
   .glass-card {
     @apply bg-white bg-opacity-80 backdrop-blur-lg border border-white border-opacity-20 shadow-lg;
   }
