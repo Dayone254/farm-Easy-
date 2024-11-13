@@ -10,11 +10,11 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="p-6 bg-[#F5F5DC]">
-      <h1 className="text-3xl font-bold text-[#2F5233] mb-2">Welcome back, Farmer!</h1>
-      <p className="text-gray-600 mb-6">Here are your tasks for today:</p>
+    <div className="container mx-auto max-w-4xl">
+      <h1 className="text-3xl font-bold text-[#2F5233] mb-2 animate-fade-up">Welcome back, Farmer!</h1>
+      <p className="text-gray-600 mb-6 animate-fade-up">Here are your tasks for today:</p>
       
-      <div className="grid gap-4">
+      <div className="grid gap-4 animate-fade-in">
         {tasks.map((task, index) => (
           <Card key={index} className="p-4 flex items-center gap-3 bg-white/80 hover:bg-white transition-colors">
             <CheckCircle className="text-[#2F5233]" />

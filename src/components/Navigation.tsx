@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CloudSun, Sprout, DollarSign, Package, Menu } from "lucide-react";
+import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Navigation = () => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const navItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/" },
     { icon: CloudSun, label: "Weather", path: "/weather" },
     { icon: Sprout, label: "Crops", path: "/crops" },
     { icon: DollarSign, label: "Market", path: "/market" },
@@ -16,28 +17,51 @@ const Navigation = () => {
   return (
     <nav
       className={cn(
-        "fixed left-0 top-0 h-screen bg-[#2F5233] text-cream transition-all duration-300",
-        isExpanded ? "w-64" : "w-16"
+        "fixed top-0 left-0 right-0 bg-[#2F5233] text-cream transition-all duration-300 z-50",
+        isExpanded ? "h-auto" : "h-16"
       )}
     >
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute right-2 top-2 p-2 text-cream hover:bg-[#1F371F] rounded-full lg:hidden"
-      >
-        <Menu size={24} />
-      </button>
-      
-      <div className="flex flex-col gap-2 p-4 pt-16">
-        {navItems.map((item) => (
-          <Link
-            key={item.path}
-            to={item.path}
-            className="flex items-center gap-4 p-3 text-cream hover:bg-[#1F371F] rounded-lg transition-colors"
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="text-xl font-bold">FarmEasy</Link>
+          
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-2 text-cream hover:bg-[#1F371F] rounded-full md:hidden"
           >
-            <item.icon size={24} />
-            {isExpanded && <span>{item.label}</span>}
-          </Link>
-        ))}
+            <Menu size={24} />
+          </button>
+
+          <div className="hidden md:flex items-center space-x-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className="flex items-center gap-2 p-2 text-cream hover:bg-[#1F371F] rounded-lg transition-colors"
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile menu */}
+        {isExpanded && (
+          <div className="md:hidden py-4">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className="flex items-center gap-2 p-3 text-cream hover:bg-[#1F371F] rounded-lg transition-colors"
+                onClick={() => setIsExpanded(false)}
+              >
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </nav>
   );
