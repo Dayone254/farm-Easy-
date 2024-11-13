@@ -5,7 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navigation from "./components/Navigation";
 import Dashboard from "./pages/Dashboard";
-import Index from "./pages/Index";
+import Crops from "./pages/Crops";
+import Market from "./pages/Market";
+import Orders from "./pages/Orders";
 
 const queryClient = new QueryClient();
 
@@ -20,11 +22,9 @@ const App = () => (
           <main className="pt-20 px-4">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/app" element={<Index />} />
-              <Route path="/weather" element={<Index />} />
-              <Route path="/crops" element={<Index />} />
-              <Route path="/market" element={<Index />} />
-              <Route path="/orders" element={<Index />} />
+              <Route path="/crops" element={<Crops />} />
+              <Route path="/market" element={<Market />} />
+              <Route path="/orders" element={<Orders />} />
             </Routes>
           </main>
         </div>
