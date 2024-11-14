@@ -39,16 +39,21 @@ const Orders = () => {
   ]);
 
   const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
+    if (!orderId || !newStatus) return;
+    
     setOrders(orders.map(order => 
       order.id === orderId ? { ...order, status: newStatus } : order
     ));
+    
     toast({
       title: "Order Updated",
       description: `Order ${orderId} has been ${newStatus.toLowerCase()}.`,
     });
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: string | null) => {
+    if (!status) return null;
+    
     switch (status) {
       case "Pending":
         return <Clock className="w-5 h-5 text-warning" />;
@@ -81,43 +86,43 @@ const Orders = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} className="border-b border-gray-100">
-                  <td className="py-4">{order.id}</td>
-                  <td className="py-4">{order.buyer}</td>
-                  <td className="py-4">{order.items}</td>
+              {orders?.map((order) => (
+                <tr key={order?.id} className="border-b border-gray-100">
+                  <td className="py-4">{order?.id}</td>
+                  <td className="py-4">{order?.buyer}</td>
+                  <td className="py-4">{order?.items}</td>
                   <td className="py-4">
                     <div className="flex items-center gap-2">
-                      {getStatusIcon(order.status)}
-                      <span>{order.status}</span>
+                      {getStatusIcon(order?.status)}
+                      <span>{order?.status}</span>
                     </div>
                   </td>
-                  <td className="py-4">{order.location}</td>
+                  <td className="py-4">{order?.location}</td>
                   <td className="py-4">
                     <div className="flex gap-2">
-                      {order.status === "Pending" && (
+                      {order?.status === "Pending" && (
                         <>
                           <Button
                             size="sm"
                             className="bg-green-500 hover:bg-green-600"
-                            onClick={() => handleStatusChange(order.id, "In Transit")}
+                            onClick={() => order?.id && handleStatusChange(order.id, "In Transit")}
                           >
                             Confirm
                           </Button>
                           <Button
                             size="sm"
                             variant="destructive"
-                            onClick={() => handleStatusChange(order.id, "Cancelled")}
+                            onClick={() => order?.id && handleStatusChange(order.id, "Cancelled")}
                           >
                             Cancel
                           </Button>
                         </>
                       )}
-                      {order.status === "In Transit" && (
+                      {order?.status === "In Transit" && (
                         <Button
                           size="sm"
                           className="bg-green-500 hover:bg-green-600"
-                          onClick={() => handleStatusChange(order.id, "Delivered")}
+                          onClick={() => order?.id && handleStatusChange(order.id, "Delivered")}
                         >
                           Mark Delivered
                         </Button>
