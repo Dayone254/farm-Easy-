@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Crops from "./pages/Crops";
 import Market from "./pages/Market";
 import Orders from "./pages/Orders";
+import Weather from "./pages/Weather";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <main className="pt-20 px-4">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/weather" element={<Weather />} />
               <Route path="/crops" element={<Crops />} />
               <Route path="/market" element={<Market />} />
               <Route path="/orders" element={<Orders />} />
