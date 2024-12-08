@@ -4,8 +4,27 @@ import MarketPrices from "../components/MarketPrices";
 import CommunityForum from "../components/CommunityForum";
 import OrdersTable from "../components/OrdersTable";
 import Marketplace from "../components/Marketplace";
+import { useState } from "react";
 
 const Index = () => {
+  const [orders] = useState([
+    {
+      id: "ORD001",
+      buyer: "John Smith",
+      seller: "Farm Fresh Co.",
+      items: "Wheat (50kg)",
+      status: "Pending",
+      location: "Farm A",
+      price: 2500,
+      paymentStatus: "In Escrow",
+    },
+  ]);
+
+  const handleStatusChange = (orderId: string, newStatus: "Pending" | "In Transit" | "Delivered" | "Cancelled" | "Payment Held" | "Payment Released") => {
+    // Handle status change logic here
+    console.log(`Order ${orderId} status changed to ${newStatus}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -25,7 +44,11 @@ const Index = () => {
         </div>
 
         <div className="fade-in">
-          <OrdersTable />
+          <OrdersTable 
+            orders={orders}
+            viewType="buying"
+            onStatusChange={handleStatusChange}
+          />
         </div>
 
         <div className="fade-in">
