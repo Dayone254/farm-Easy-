@@ -1,5 +1,22 @@
-import { ShoppingCart, X, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { ShoppingCart, X, Trash2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 
 interface CartItem {
   id: number;
@@ -17,9 +34,34 @@ interface CartDrawerProps {
 }
 
 const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => {
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const { toast } = useToast();
+
   if (!open) return null;
 
   const total = items.reduce((sum, item) => sum + item.price, 0);
+
+  const handleCheckout = () => {
+    if (!phoneNumber || !paymentMethod) {
+      toast({
+        title: "Error",
+        description: "Please fill in all payment details",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Here you would integrate with your payment processing backend
+    toast({
+      title: "Payment Initiated",
+      description: `A payment request has been sent to ${phoneNumber} via ${paymentMethod}. Please check your phone to complete the transaction.`,
+    });
+    
+    setIsCheckoutOpen(false);
+    // You would typically wait for a webhook callback to confirm payment
+  };
 
   return (
     <div className="fixed inset-0 z-50">
@@ -82,11 +124,63 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
             <span className="font-medium">Total:</span>
             <span className="font-bold">KSh {total.toLocaleString()}</span>
           </div>
-          <Button className="w-full" disabled={items.length === 0}>
+          <Button 
+            className="w-full" 
+            disabled={items.length === 0}
+            onClick={() => setIsCheckoutOpen(true)}
+          >
             Proceed to Checkout
           </Button>
         </div>
       </div>
+
+      <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete Your Purchase</DialogTitle>
+            <DialogDescription>
+              Choose your payment method and enter your phone number to proceed
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Payment Method</label>
+              <Select onValueChange={setPaymentMethod}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select payment method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mpesa">M-Pesa</SelectItem>
+                  <SelectItem value="airtel">Airtel Money</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Phone Number</label>
+              <div className="flex gap-2">
+                <Input
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <Button 
+                className="w-full" 
+                onClick={handleCheckout}
+              >
+                Pay KSh {total.toLocaleString()}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
