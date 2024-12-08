@@ -13,10 +13,10 @@ const Index = () => {
       buyer: "John Smith",
       seller: "Farm Fresh Co.",
       items: "Wheat (50kg)",
-      status: "Pending",
+      status: "Pending" as const,
       location: "Farm A",
       price: 2500,
-      paymentStatus: "In Escrow",
+      paymentStatus: "In Escrow" as const,
     },
   ]);
 
