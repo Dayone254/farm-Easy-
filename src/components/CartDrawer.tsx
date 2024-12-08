@@ -1,10 +1,18 @@
 import { ShoppingCart, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  location: string;
+  image: string;
+}
+
 interface CartDrawerProps {
   open: boolean;
   onClose: () => void;
-  items: any[];
+  items: CartItem[];
   onRemoveItem: (index: number) => void;
 }
 
@@ -23,7 +31,7 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-semibold flex items-center gap-2">
             <ShoppingCart className="h-6 w-6" />
-            Your Cart
+            Your Cart ({items.length})
           </h2>
           <Button
             variant="ghost"
@@ -42,7 +50,7 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
           ) : (
             <div className="space-y-4">
               {items.map((item, index) => (
-                <div key={index} className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+                <div key={item.id} className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
                   <div className="flex items-center gap-4">
                     <img
                       src={item.image}
