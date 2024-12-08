@@ -1,16 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
 import { MapPin } from "lucide-react";
 
 interface ProductGridProps {
   category: string;
   priceRange: string;
+  onAddToCart: (product: any) => void;
 }
 
-const ProductGrid = ({ category, priceRange }: ProductGridProps) => {
-  const { toast } = useToast();
-
+const ProductGrid = ({ category, priceRange, onAddToCart }: ProductGridProps) => {
   const products = [
     {
       id: 1,
@@ -56,13 +54,6 @@ const ProductGrid = ({ category, priceRange }: ProductGridProps) => {
     return true;
   });
 
-  const handleAddToCart = (product: any) => {
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
-  };
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {filteredProducts.map((product) => (
@@ -83,7 +74,7 @@ const ProductGrid = ({ category, priceRange }: ProductGridProps) => {
                 KSh {product.price.toLocaleString()}
               </span>
               <Button 
-                onClick={() => handleAddToCart(product)}
+                onClick={() => onAddToCart(product)}
                 size="sm"
               >
                 Add to Cart
