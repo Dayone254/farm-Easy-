@@ -1,30 +1,24 @@
-import { Truck, CheckCircle, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Check, X, Clock, Truck, DollarSign } from "lucide-react";
 
-const OrdersTable = () => {
-  const orders = [
-    {
-      id: "ORD001",
-      buyer: "John Smith",
-      items: "Wheat (50kg)",
-      status: "Pending",
-      location: "Farm A",
-    },
-    {
-      id: "ORD002",
-      buyer: "Sarah Johnson",
-      items: "Rice (100kg)",
-      status: "In Transit",
-      location: "Farm B",
-    },
-    {
-      id: "ORD003",
-      buyer: "Mike Brown",
-      items: "Corn (75kg)",
-      status: "Delivered",
-      location: "Farm C",
-    },
-  ];
+interface Order {
+  id: string;
+  buyer: string;
+  seller: string;
+  items: string;
+  status: "Pending" | "In Transit" | "Delivered" | "Cancelled" | "Payment Held" | "Payment Released";
+  location: string;
+  price: number;
+  paymentStatus: "Pending" | "In Escrow" | "Released" | "Refunded";
+}
 
+interface OrdersTableProps {
+  orders: Order[];
+  viewType: "buying" | "selling";
+  onStatusChange: (orderId: string, newStatus: Order["status"]) => void;
+}
+
+const OrdersTable = ({ orders, viewType, onStatusChange }: OrdersTableProps) => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Pending":
@@ -32,30 +26,38 @@ const OrdersTable = () => {
       case "In Transit":
         return <Truck className="w-5 h-5 text-accent" />;
       case "Delivered":
-        return <CheckCircle className="w-5 h-5 text-success" />;
+        return <Check className="w-5 h-5 text-success" />;
+      case "Cancelled":
+        return <X className="w-5 h-5 text-destructive" />;
+      case "Payment Held":
+        return <DollarSign className="w-5 h-5 text-warning" />;
+      case "Payment Released":
+        return <DollarSign className="w-5 h-5 text-success" />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="glass-card rounded-lg p-6 hover-scale overflow-x-auto">
-      <h3 className="text-xl font-semibold mb-6">Orders</h3>
+    <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
           <tr className="text-left border-b border-gray-200">
             <th className="pb-4">Order ID</th>
-            <th className="pb-4">Buyer</th>
+            <th className="pb-4">{viewType === "buying" ? "Seller" : "Buyer"}</th>
             <th className="pb-4">Items</th>
             <th className="pb-4">Status</th>
+            <th className="pb-4">Payment</th>
+            <th className="pb-4">Price</th>
             <th className="pb-4">Location</th>
+            <th className="pb-4">Actions</th>
           </tr>
         </thead>
         <tbody>
           {orders.map((order) => (
             <tr key={order.id} className="border-b border-gray-100">
               <td className="py-4">{order.id}</td>
-              <td className="py-4">{order.buyer}</td>
+              <td className="py-4">{viewType === "buying" ? order.seller : order.buyer}</td>
               <td className="py-4">{order.items}</td>
               <td className="py-4">
                 <div className="flex items-center gap-2">
@@ -63,7 +65,58 @@ const OrdersTable = () => {
                   <span>{order.status}</span>
                 </div>
               </td>
+              <td className="py-4">
+                <span className={`px-2 py-1 rounded-full text-sm ${
+                  order.paymentStatus === "Released" ? "bg-green-100 text-green-800" :
+                  order.paymentStatus === "In Escrow" ? "bg-yellow-100 text-yellow-800" :
+                  order.paymentStatus === "Refunded" ? "bg-red-100 text-red-800" :
+                  "bg-gray-100 text-gray-800"
+                }`}>
+                  {order.paymentStatus}
+                </span>
+              </td>
+              <td className="py-4">KSh {order.price.toLocaleString()}</td>
               <td className="py-4">{order.location}</td>
+              <td className="py-4">
+                <div className="flex gap-2">
+                  {viewType === "selling" && order.status === "Pending" && (
+                    <>
+                      <Button
+                        size="sm"
+                        className="bg-green-500 hover:bg-green-600"
+                        onClick={() => onStatusChange(order.id, "In Transit")}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => onStatusChange(order.id, "Cancelled")}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                  {viewType === "selling" && order.status === "In Transit" && (
+                    <Button
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600"
+                      onClick={() => onStatusChange(order.id, "Delivered")}
+                    >
+                      Mark Delivered
+                    </Button>
+                  )}
+                  {viewType === "buying" && order.status === "Delivered" && order.paymentStatus === "In Escrow" && (
+                    <Button
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600"
+                      onClick={() => onStatusChange(order.id, "Payment Released")}
+                    >
+                      Release Payment
+                    </Button>
+                  )}
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
