@@ -80,29 +80,39 @@ const Marketplace = () => {
             />
             <div className="p-4">
               <h4 className="font-medium mb-2">{product.name}</h4>
-              <div 
-                className="flex items-center gap-2 mb-2 cursor-pointer hover:text-accent transition-colors"
-                onClick={() => setSelectedSeller(product.seller)}
-              >
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={product.seller.profileImage} />
-                  <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
-                </Avatar>
-                <span className="text-sm">{product.seller.name}</span>
-                {product.seller.isVerified && (
-                  <Badge variant="secondary" className="h-5">
-                    <UserCheck className="h-3 w-3 mr-1" />
-                    Verified
-                  </Badge>
-                )}
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="relative cursor-pointer group"
+                    onClick={() => setSelectedSeller(product.seller)}
+                  >
+                    <Avatar className="h-10 w-10 ring-2 ring-accent/50 transition-all duration-300 group-hover:ring-accent">
+                      <AvatarImage src={product.seller.profileImage} />
+                      <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1">
+                      {product.seller.isVerified && (
+                        <Badge variant="secondary" className="h-5 scale-75">
+                          <UserCheck className="h-3 w-3" />
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium hover:text-accent cursor-pointer" onClick={() => setSelectedSeller(product.seller)}>
+                      {product.seller.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{product.seller.location}</span>
+                  </div>
+                </div>
+                <span className="font-semibold">${product.price}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">{product.quantity}</span>
-                <span className="font-semibold">${product.price}</span>
+                <button className="bg-accent text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+                  Buy Now
+                </button>
               </div>
-              <button className="w-full mt-4 bg-accent text-white py-2 rounded-md hover:bg-opacity-90 transition-colors">
-                Buy Now
-              </button>
             </div>
           </div>
         ))}
