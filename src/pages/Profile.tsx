@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCheck, MapPin, Phone, Camera, CheckCircle } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 
 const Profile = () => {
   const { toast } = useToast();
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const { userProfile, updateProfile } = useUser();
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
   const [isLocationVerified, setIsLocationVerified] = useState(false);
 
@@ -17,15 +18,15 @@ const Profile = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImage(reader.result as string);
+        updateProfile({ profileImage: reader.result as string });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleVerifyPhone = () => {
-    // Simulating phone verification
     setIsPhoneVerified(true);
+    updateProfile({ isVerified: true });
     toast({
       title: "Phone Verified",
       description: "Your phone number has been successfully verified.",
@@ -33,7 +34,6 @@ const Profile = () => {
   };
 
   const handleVerifyLocation = () => {
-    // Simulating location verification
     setIsLocationVerified(true);
     toast({
       title: "Location Verified",
@@ -41,8 +41,17 @@ const Profile = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    updateProfile({
+      name: formData.get("name") as string,
+      phoneNumber: formData.get("phone") as string,
+      location: formData.get("location") as string,
+      bio: formData.get("bio") as string,
+    });
+
     toast({
       title: "Profile Updated",
       description: "Your profile has been successfully updated.",
@@ -55,7 +64,7 @@ const Profile = () => {
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={profileImage || ""} />
+              <AvatarImage src={userProfile?.profileImage || ""} />
               <AvatarFallback>
                 <UserCheck className="h-12 w-12" />
               </AvatarFallback>
@@ -83,21 +92,22 @@ const Profile = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label htmlFor="firstName">First Name</label>
-              <Input id="firstName" placeholder="Enter your first name" />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="lastName">Last Name</label>
-              <Input id="lastName" placeholder="Enter your last name" />
-            </div>
+          <div className="space-y-2">
+            <label htmlFor="name">Full Name</label>
+            <Input
+              id="name"
+              name="name"
+              defaultValue={userProfile?.name}
+              placeholder="Enter your full name"
+            />
           </div>
 
           <div className="space-y-2">
             <label htmlFor="bio">Bio</label>
             <Textarea
               id="bio"
+              name="bio"
+              defaultValue={userProfile?.bio}
               placeholder="Tell us about your farming experience"
               className="min-h-[100px]"
             />
@@ -112,7 +122,12 @@ const Profile = () => {
               )}
             </label>
             <div className="flex space-x-2">
-              <Input id="phone" placeholder="Enter your phone number" />
+              <Input
+                id="phone"
+                name="phone"
+                defaultValue={userProfile?.phoneNumber}
+                placeholder="Enter your phone number"
+              />
               <Button
                 type="button"
                 onClick={handleVerifyPhone}
@@ -132,7 +147,12 @@ const Profile = () => {
               )}
             </label>
             <div className="flex space-x-2">
-              <Input id="location" placeholder="Enter your location" />
+              <Input
+                id="location"
+                name="location"
+                defaultValue={userProfile?.location}
+                placeholder="Enter your location"
+              />
               <Button
                 type="button"
                 onClick={handleVerifyLocation}

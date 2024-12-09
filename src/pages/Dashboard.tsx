@@ -2,8 +2,11 @@ import { Card } from "@/components/ui/card";
 import TaskList from "@/components/TaskList";
 import AIHelper from "@/components/AIHelper";
 import { Newspaper, BookOpen, Lightbulb } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
 
 const Dashboard = () => {
+  const { userProfile } = useUser();
+  
   const news = [
     { title: "New Sustainable Farming Methods Emerge", date: "2024-02-20" },
     { title: "Climate Change Impact on Agriculture", date: "2024-02-19" },
@@ -19,7 +22,7 @@ const Dashboard = () => {
   return (
     <div className="container mx-auto max-w-7xl">
       <h1 className="text-3xl font-bold text-[#2F5233] mb-2 animate-fade-up">
-        Welcome back, Farmer!
+        Welcome back, {userProfile?.name || "Farmer"}!
       </h1>
       <p className="text-gray-600 mb-6 animate-fade-up">Here's your daily overview</p>
 
