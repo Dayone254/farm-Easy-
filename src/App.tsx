@@ -10,6 +10,7 @@ import Market from "./pages/Market";
 import Orders from "./pages/Orders";
 import Weather from "./pages/Weather";
 import Financing from "./pages/Financing";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/market" element={<Market />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/financing" element={<Financing />} />
+              <Route path="/profile" element={<Profile />} />
             </Routes>
           </main>
         </div>

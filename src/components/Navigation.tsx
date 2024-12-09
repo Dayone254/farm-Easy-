@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu, Calculator } from "lucide-react";
+import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu, Calculator, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Navigation = () => {
@@ -13,6 +13,7 @@ const Navigation = () => {
     { icon: DollarSign, label: "Market", path: "/market" },
     { icon: Package, label: "Orders", path: "/orders" },
     { icon: Calculator, label: "Financing", path: "/financing" },
+    { icon: UserCheck, label: "Profile", path: "/profile" },
   ];
 
   return (
