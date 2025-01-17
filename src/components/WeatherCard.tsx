@@ -1,99 +1,125 @@
-import { Cloud, Sun, Wind, Droplets, MapPin, ThermometerSun, ThermometerSnowflake } from "lucide-react";
+import { Cloud, Sun, Moon, Wind, Droplets, MapPin } from "lucide-react";
 import { format } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const WeatherCard = () => {
   const currentDate = new Date();
-  const location = "Nairobi, Kenya"; // This could be made dynamic with geolocation
+  const location = "Nairobi, Kenya";
+  const currentTemp = 24;
+  const condition = "Clear";
+  const feelsLike = 22;
+  const highTemp = 28;
+  const lowTemp = 18;
 
-  const weatherData = [
-    {
-      date: new Date(),
-      highTemp: 24,
-      lowTemp: 18,
-      windSpeed: 12,
-      humidity: 30,
-      condition: "Sunny",
-      precipitation: 10,
-    },
-    // Generate next 6 days
-    ...Array.from({ length: 6 }, (_, i) => ({
-      date: new Date(currentDate.getTime() + (i + 1) * 24 * 60 * 60 * 1000),
-      highTemp: 22 + Math.floor(Math.random() * 4),
-      lowTemp: 16 + Math.floor(Math.random() * 4),
-      windSpeed: 10 + Math.floor(Math.random() * 5),
-      humidity: 30 + Math.floor(Math.random() * 20),
-      condition: ["Sunny", "Cloudy", "Partly Cloudy", "Rainy"][Math.floor(Math.random() * 4)],
-      precipitation: Math.floor(Math.random() * 30),
-    })),
-  ];
+  // Generate hourly data for the temperature graph
+  const hourlyData = Array.from({ length: 12 }, (_, i) => {
+    const hour = new Date(currentDate);
+    hour.setHours(currentDate.getHours() + i);
+    return {
+      time: format(hour, 'ha'),
+      temp: Math.floor(22 + Math.random() * 6),
+      icon: ["Sun", "Cloud", "Moon"][Math.floor(Math.random() * 3)],
+    };
+  });
+
+  // Generate chart data
+  const chartData = hourlyData.map(hour => ({
+    name: hour.time,
+    temperature: hour.temp,
+  }));
 
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
+    <Card className="w-full bg-[#2B2D42] text-white p-6 rounded-xl">
+      <div className="space-y-8">
+        {/* Current Weather Section */}
+        <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-xl font-semibold">Weather Forecast</CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+            <div className="text-6xl font-light mb-2">{currentTemp}°</div>
+            <div className="flex items-center gap-2 text-gray-300">
               <MapPin className="h-4 w-4" />
               <span>{location}</span>
             </div>
+            <div className="mt-1 text-gray-300">{condition}</div>
+            <div className="text-sm text-gray-400 mt-1">
+              Feels like {feelsLike}°
+            </div>
           </div>
           <div className="text-right">
-            <p className="font-medium">{format(currentDate, 'EEEE')}</p>
-            <p className="text-sm text-muted-foreground">{format(currentDate, 'MMM d, yyyy')}</p>
+            <Moon className="h-16 w-16 text-yellow-300 mb-2" />
+            <div className="text-sm text-gray-300">
+              H: {highTemp}° L: {lowTemp}°
+            </div>
           </div>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mt-4">
-          {weatherData.map((day) => (
-            <div
-              key={day.date.toISOString()}
-              className="flex flex-col items-center p-3 rounded-lg bg-accent/10 hover:bg-accent/20 transition-colors"
-            >
-              <p className="text-sm font-medium mb-2">{format(day.date, 'EEE')}</p>
-              <p className="text-xs text-muted-foreground mb-3">{format(day.date, 'MMM d')}</p>
-              
-              {day.condition === "Sunny" ? (
-                <Sun className="h-6 w-6 text-yellow-500 mb-2" />
-              ) : day.condition === "Cloudy" ? (
-                <Cloud className="h-6 w-6 text-gray-500 mb-2" />
-              ) : day.condition === "Partly Cloudy" ? (
-                <Cloud className="h-6 w-6 text-blue-500 mb-2" />
-              ) : (
-                <Droplets className="h-6 w-6 text-blue-500 mb-2" />
-              )}
 
-              <div className="flex items-center gap-1 mb-1">
-                <ThermometerSun className="h-4 w-4 text-red-500" />
-                <span className="text-sm font-medium">{day.highTemp}°C</span>
+        {/* Hourly Forecast */}
+        <div className="space-y-4">
+          <div className="text-sm text-gray-400">
+            Partly cloudy. Highs in the upper 70s and lows in the low 60s.
+          </div>
+          
+          <div className="grid grid-cols-6 md:grid-cols-12 gap-4">
+            {hourlyData.map((hour, index) => (
+              <div
+                key={index}
+                className="flex flex-col items-center text-center space-y-2"
+              >
+                <span className="text-sm text-gray-400">{hour.time}</span>
+                {hour.icon === "Sun" ? (
+                  <Sun className="h-5 w-5 text-yellow-300" />
+                ) : hour.icon === "Moon" ? (
+                  <Moon className="h-5 w-5 text-yellow-300" />
+                ) : (
+                  <Cloud className="h-5 w-5 text-gray-400" />
+                )}
+                <span className="text-sm">{hour.temp}°</span>
               </div>
-              
-              <div className="flex items-center gap-1 mb-2">
-                <ThermometerSnowflake className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium">{day.lowTemp}°C</span>
-              </div>
+            ))}
+          </div>
 
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Wind className="h-3 w-3" />
-                <span>{day.windSpeed}km/h</span>
-              </div>
-
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Droplets className="h-3 w-3" />
-                <span>{day.humidity}%</span>
-              </div>
-
-              {day.precipitation > 0 && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  {day.precipitation}% rain
-                </div>
-              )}
-            </div>
-          ))}
+          {/* Temperature Chart */}
+          <div className="h-32 mt-6">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <XAxis
+                  dataKey="name"
+                  stroke="#9CA3AF"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis hide />
+                <Line
+                  type="monotone"
+                  dataKey="temperature"
+                  stroke="#60A5FA"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </CardContent>
+
+        {/* Trending Section */}
+        <div className="space-y-2">
+          <h3 className="text-gray-400">Trending Now</h3>
+          <div className="bg-[#373952] rounded-lg p-4">
+            <p className="text-sm">Weather Alert: Clear skies expected throughout the week</p>
+            <div className="flex gap-1 mt-2">
+              {[1, 2, 3, 4, 5].map((dot) => (
+                <div
+                  key={dot}
+                  className={`h-1 w-1 rounded-full ${
+                    dot === 1 ? "bg-blue-400" : "bg-gray-600"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
     </Card>
   );
 };
