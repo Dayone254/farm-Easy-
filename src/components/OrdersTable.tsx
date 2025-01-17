@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock, Truck, DollarSign } from "lucide-react";
+import { Check, X, Clock, Truck, DollarSign, Shield } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Order {
   id: string;
@@ -19,6 +20,8 @@ interface OrdersTableProps {
 }
 
 const OrdersTable = ({ orders, viewType, onStatusChange }: OrdersTableProps) => {
+  const { toast } = useToast();
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "Pending":
@@ -30,12 +33,20 @@ const OrdersTable = ({ orders, viewType, onStatusChange }: OrdersTableProps) => 
       case "Cancelled":
         return <X className="w-5 h-5 text-destructive" />;
       case "Payment Held":
-        return <DollarSign className="w-5 h-5 text-warning" />;
+        return <Shield className="w-5 h-5 text-warning" />;
       case "Payment Released":
         return <DollarSign className="w-5 h-5 text-success" />;
       default:
         return null;
     }
+  };
+
+  const handlePaymentRelease = (orderId: string) => {
+    onStatusChange(orderId, "Payment Released");
+    toast({
+      title: "Payment Released",
+      description: "The payment has been released to the seller.",
+    });
   };
 
   return (
@@ -106,11 +117,13 @@ const OrdersTable = ({ orders, viewType, onStatusChange }: OrdersTableProps) => 
                       Mark Delivered
                     </Button>
                   )}
-                  {viewType === "buying" && order.status === "Delivered" && order.paymentStatus === "In Escrow" && (
+                  {viewType === "buying" && 
+                   order.status === "Delivered" && 
+                   order.paymentStatus === "In Escrow" && (
                     <Button
                       size="sm"
                       className="bg-green-500 hover:bg-green-600"
-                      onClick={() => onStatusChange(order.id, "Payment Released")}
+                      onClick={() => handlePaymentRelease(order.id)}
                     >
                       Release Payment
                     </Button>

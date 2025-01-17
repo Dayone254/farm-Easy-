@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingCart, X, Trash2, Phone } from "lucide-react";
+import { ShoppingCart, X, Trash2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -53,14 +53,15 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
       return;
     }
 
-    // Here you would integrate with your payment processing backend
+    // Here we would integrate with payment processing and create an escrow order
     toast({
-      title: "Payment Initiated",
-      description: `A payment request has been sent to ${phoneNumber} via ${paymentMethod}. Please check your phone to complete the transaction.`,
+      title: "Payment Held in Escrow",
+      description: "Your payment will be held securely until you confirm receipt of your items.",
+      duration: 5000,
     });
     
     setIsCheckoutOpen(false);
-    // You would typically wait for a webhook callback to confirm payment
+    onClose();
   };
 
   return (
@@ -120,6 +121,10 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-6 bg-cream border-t">
+          <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
+            <Shield className="h-4 w-4" />
+            <span>Payment will be held securely until you receive your items</span>
+          </div>
           <div className="flex justify-between mb-4">
             <span className="font-medium">Total:</span>
             <span className="font-bold">KSh {total.toLocaleString()}</span>
@@ -129,7 +134,7 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
             disabled={items.length === 0}
             onClick={() => setIsCheckoutOpen(true)}
           >
-            Proceed to Checkout
+            Proceed to Escrow Payment
           </Button>
         </div>
       </div>
@@ -137,9 +142,9 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Complete Your Purchase</DialogTitle>
+            <DialogTitle>Secure Escrow Payment</DialogTitle>
             <DialogDescription>
-              Choose your payment method and enter your phone number to proceed
+              Your payment will be held securely until you confirm receipt of your items
             </DialogDescription>
           </DialogHeader>
           
@@ -175,7 +180,8 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
                 className="w-full" 
                 onClick={handleCheckout}
               >
-                Pay KSh {total.toLocaleString()}
+                <Shield className="w-4 h-4 mr-2" />
+                Pay KSh {total.toLocaleString()} to Escrow
               </Button>
             </div>
           </div>
