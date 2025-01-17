@@ -18,13 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
 
 interface CartItem {
   id: number;
   name: string;
   price: number;
-  location: string;
-  image: string;
+  seller: {
+    id: string;
+    name: string;
+  };
 }
 
 interface CartDrawerProps {
@@ -32,14 +35,16 @@ interface CartDrawerProps {
   onClose: () => void;
   items: CartItem[];
   onRemoveItem: (index: number) => void;
+  onOrderCreated: (orderDetails: any) => void;
 }
 
-const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => {
+const CartDrawer = ({ open, onClose, items, onRemoveItem, onOrderCreated }: CartDrawerProps) => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const { userProfile } = useUser();
 
   if (!open) return null;
 
@@ -49,7 +54,7 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
     if (!phoneNumber || !paymentMethod) {
       toast({
         title: "Error",
-        description: "Please fill in all payment details",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -61,7 +66,6 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
       // Simulate payment request to M-Pesa
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Show payment prompt notification
       toast({
         title: "Payment Request Sent",
         description: "Please check your phone for the M-Pesa payment prompt",
@@ -69,6 +73,21 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
 
       // Simulate payment confirmation
       await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Create order objects for each item
+      const orders = items.map(item => ({
+        id: `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`,
+        buyer: userProfile?.name || "Unknown Buyer",
+        seller: item.seller.name,
+        items: item.name,
+        status: "Pending",
+        location: userProfile?.location || "Unknown Location",
+        price: item.price,
+        paymentStatus: "In Escrow",
+      }));
+
+      // Call the onOrderCreated callback with the new orders
+      onOrderCreated(orders);
 
       toast({
         title: "Payment Successful",
@@ -90,54 +109,42 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50">
-      <div 
-        className="absolute inset-0 bg-black bg-opacity-50"
-        onClick={onClose}
-      />
-      <div className="absolute right-0 top-0 h-full w-full max-w-md bg-cream p-6 shadow-xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-semibold flex items-center gap-2">
-            <ShoppingCart className="h-6 w-6" />
-            Your Cart ({items.length})
-          </h2>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-          >
-            <X className="h-6 w-6" />
+    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-background shadow-xl z-50">
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-lg font-semibold">Shopping Cart</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className="h-[calc(100vh-280px)] overflow-auto">
+        <div className="flex-1 overflow-y-auto p-4">
           {items.length === 0 ? (
-            <div className="text-center text-gray-500 mt-10">
+            <div className="text-center text-muted-foreground py-8">
               Your cart is empty
             </div>
           ) : (
             <div className="space-y-4">
               {items.map((item, index) => (
-                <div key={item.id} className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div>
-                      <h3 className="font-medium">{item.name}</h3>
-                      <p className="text-sm text-gray-500">{item.location}</p>
-                      <p className="font-semibold">KSh {item.price.toLocaleString()}</p>
-                    </div>
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between border-b pb-4"
+                >
+                  <div>
+                    <h3 className="font-medium">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Seller: {item.seller.name}
+                    </p>
+                    <p className="text-sm font-medium">
+                      KSh {item.price.toLocaleString()}
+                    </p>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => onRemoveItem(index)}
-                    className="text-red-500 hover:text-red-700"
                   >
-                    <Trash2 className="h-5 w-5" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
@@ -145,22 +152,20 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
           )}
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-cream border-t">
-          <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
-            <Shield className="h-4 w-4" />
-            <span>Payment will be held securely until you receive your items</span>
-          </div>
+        <div className="p-4 border-t">
           <div className="flex justify-between mb-4">
-            <span className="font-medium">Total:</span>
+            <span className="font-medium">Total</span>
             <span className="font-bold">KSh {total.toLocaleString()}</span>
           </div>
-          <Button 
-            className="w-full" 
-            disabled={items.length === 0}
-            onClick={() => setIsCheckoutOpen(true)}
-          >
-            Proceed to Mobile Payment
-          </Button>
+          <div>
+            <Button
+              className="w-full"
+              disabled={items.length === 0}
+              onClick={() => setIsCheckoutOpen(true)}
+            >
+              Proceed to Mobile Payment
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -173,31 +178,31 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Payment Method</label>
-              <Select onValueChange={setPaymentMethod}>
-                <SelectTrigger>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium mb-2">
+                Phone Number
+              </label>
+              <Input
+                id="phone"
+                placeholder="e.g., 0712345678"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="payment" className="block text-sm font-medium mb-2">
+                Payment Method
+              </label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger id="payment">
                   <SelectValue placeholder="Select payment method" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="mpesa">M-Pesa</SelectItem>
-                  <SelectItem value="airtel">Airtel Money</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Phone Number</label>
-              <div className="flex gap-2">
-                <Input
-                  type="tel"
-                  placeholder="Enter phone number"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="flex-1"
-                />
-              </div>
             </div>
 
             <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-sm text-green-700">

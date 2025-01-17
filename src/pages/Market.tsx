@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import Marketplace from "@/components/Marketplace";
 import ProductListingForm from "@/components/ProductListingForm";
 import CartDrawer from "@/components/CartDrawer";
 import MarketFilters from "@/components/market/MarketFilters";
 import MarketHeader from "@/components/market/MarketHeader";
+import { useUser } from "@/contexts/UserContext";
 
 const Market = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -16,6 +18,8 @@ const Market = () => {
   const [cartItems, setCartItems] = useState([]);
   const { toast } = useToast();
   const [products, setProducts] = useState<any[]>([]);
+  const navigate = useNavigate();
+  const { userProfile } = useUser();
 
   const handleAddProduct = (newProduct: any) => {
     setProducts(prevProducts => [newProduct, ...prevProducts]);
@@ -24,6 +28,15 @@ const Market = () => {
       title: "Product Listed",
       description: "Your product has been successfully added to the marketplace.",
     });
+  };
+
+  const handleOrderCreated = (orderDetails: any) => {
+    // After successful payment and order creation, navigate to orders page
+    toast({
+      title: "Order Created",
+      description: "Your order has been created and is now being processed.",
+    });
+    navigate("/orders");
   };
 
   return (
@@ -66,6 +79,7 @@ const Market = () => {
         onRemoveItem={(index) => {
           setCartItems(prev => prev.filter((_, i) => i !== index));
         }}
+        onOrderCreated={handleOrderCreated}
       />
 
       <ProductListingForm
