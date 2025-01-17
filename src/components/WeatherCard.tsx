@@ -1,5 +1,5 @@
 import { Cloud, Sun, Moon, Wind, Droplets, MapPin } from "lucide-react";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
@@ -12,21 +12,22 @@ const WeatherCard = () => {
   const highTemp = 28;
   const lowTemp = 18;
 
-  // Generate hourly data for the temperature graph
-  const hourlyData = Array.from({ length: 12 }, (_, i) => {
-    const hour = new Date(currentDate);
-    hour.setHours(currentDate.getHours() + i);
+  // Generate weekly data for the temperature graph
+  const weeklyData = Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(currentDate, i);
     return {
-      time: format(hour, 'ha'),
-      temp: Math.floor(22 + Math.random() * 6),
+      day: format(date, 'EEE'),
+      temp: Math.floor(20 + Math.random() * 8),
       icon: ["Sun", "Cloud", "Moon"][Math.floor(Math.random() * 3)],
+      high: Math.floor(24 + Math.random() * 6),
+      low: Math.floor(16 + Math.random() * 4),
     };
   });
 
   // Generate chart data
-  const chartData = hourlyData.map(hour => ({
-    name: hour.time,
-    temperature: hour.temp,
+  const chartData = weeklyData.map(day => ({
+    name: day.day,
+    temperature: day.temp,
   }));
 
   return (
@@ -53,27 +54,30 @@ const WeatherCard = () => {
           </div>
         </div>
 
-        {/* Hourly Forecast */}
+        {/* Weekly Forecast */}
         <div className="space-y-4">
           <div className="text-sm text-cream/70">
-            Partly cloudy. Highs in the upper 70s and lows in the low 60s.
+            Weekly forecast shows stable temperatures with occasional cloud cover.
           </div>
           
-          <div className="grid grid-cols-6 md:grid-cols-12 gap-4">
-            {hourlyData.map((hour, index) => (
+          <div className="grid grid-cols-7 gap-4">
+            {weeklyData.map((day, index) => (
               <div
                 key={index}
                 className="flex flex-col items-center text-center space-y-2"
               >
-                <span className="text-sm text-cream/70">{hour.time}</span>
-                {hour.icon === "Sun" ? (
+                <span className="text-sm font-medium text-cream">{day.day}</span>
+                {day.icon === "Sun" ? (
                   <Sun className="h-5 w-5 text-cream" />
-                ) : hour.icon === "Moon" ? (
+                ) : day.icon === "Moon" ? (
                   <Moon className="h-5 w-5 text-cream" />
                 ) : (
                   <Cloud className="h-5 w-5 text-cream/80" />
                 )}
-                <span className="text-sm text-cream">{hour.temp}°</span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-cream">{day.high}°</span>
+                  <span className="text-xs text-cream/70">{day.low}°</span>
+                </div>
               </div>
             ))}
           </div>
