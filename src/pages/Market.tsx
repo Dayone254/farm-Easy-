@@ -30,8 +30,6 @@ const Market = () => {
     });
   };
 
-  // ... keep existing code (rest of the component)
-
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
@@ -120,13 +118,14 @@ const Market = () => {
           </Card>
         </div>
 
-      <div className="lg:col-span-5">
-        <div className="mb-4 flex justify-end">
-          <Button onClick={() => setIsListingFormOpen(true)} className="bg-accent hover:bg-accent/90">
-            Sell Product
-          </Button>
+        <div className="lg:col-span-5">
+          <div className="mb-4 flex justify-end">
+            <Button onClick={() => setIsListingFormOpen(true)} className="bg-accent hover:bg-accent/90">
+              Sell Product
+            </Button>
+          </div>
+          <Marketplace products={products} setProducts={setProducts} />
         </div>
-        <Marketplace products={products} setProducts={setProducts} />
       </div>
 
       <CartDrawer 
