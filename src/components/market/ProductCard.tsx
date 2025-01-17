@@ -20,6 +20,15 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
   const navigate = useNavigate();
 
   const handleContactSeller = () => {
+    if (!userProfile) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to message sellers.",
+      });
+      return;
+    }
+
     navigate("/messages", { 
       state: { 
         selectedContact: {
@@ -34,9 +43,11 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
     });
   };
 
+  const isOwner = userProfile?.id === product.seller.id;
+
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow relative animate-fade-up">
-      {product.seller.id === userProfile?.id && (
+      {isOwner && (
         <button
           onClick={() => onRemove(product.id)}
           className="absolute top-2 right-2 z-10 p-1.5 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors"
@@ -94,7 +105,7 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
         </div>
 
         <div className="pt-2 border-t space-y-2">
-          {product.seller.id === userProfile?.id ? (
+          {isOwner ? (
             <Button 
               variant="destructive"
               className="w-full"
