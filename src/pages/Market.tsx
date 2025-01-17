@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import Marketplace from "@/components/Marketplace";
 
 const Market = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -20,35 +21,12 @@ const Market = () => {
   const [cartItems, setCartItems] = useState([]);
   const { toast } = useToast();
 
-  const categories = [
-    { id: "all", label: "All Products" },
-    { id: "fertilizer", label: "Fertilizers" },
-    { id: "tools", label: "Farming Tools" },
-    { id: "seeds", label: "Seeds" },
-    { id: "products", label: "Farm Products" },
-  ];
-
-  const priceRanges = [
-    { id: "all", label: "All Prices" },
-    { id: "under1000", label: "Under KSh 1,000" },
-    { id: "1000to5000", label: "KSh 1,000 - 5,000" },
-    { id: "over5000", label: "Over KSh 5,000" },
-  ];
-
   const handleAddToCart = (product) => {
     setCartItems(prev => [...prev, product]);
     toast({
       title: "Added to cart",
       description: `${product.name} has been added to your cart.`,
     });
-  };
-
-  const handleProductSubmit = (product: any) => {
-    toast({
-      title: "Product Listed",
-      description: "Your product has been successfully listed in the marketplace.",
-    });
-    setIsListingFormOpen(false);
   };
 
   return (
@@ -67,9 +45,6 @@ const Market = () => {
                 {cartItems.length}
               </span>
             )}
-          </Button>
-          <Button onClick={() => setIsListingFormOpen(true)}>
-            Sell Product
           </Button>
         </div>
       </div>
@@ -143,11 +118,7 @@ const Market = () => {
         </div>
 
         <div className="lg:col-span-5">
-          <ProductGrid 
-            category={selectedCategory} 
-            priceRange={priceRange}
-            onAddToCart={handleAddToCart}
-          />
+          <Marketplace />
         </div>
       </div>
 
@@ -159,14 +130,23 @@ const Market = () => {
           setCartItems(prev => prev.filter((_, i) => i !== index));
         }}
       />
-
-      <ProductListingForm
-        isOpen={isListingFormOpen}
-        onClose={() => setIsListingFormOpen(false)}
-        onSubmit={handleProductSubmit}
-      />
     </div>
   );
 };
+
+const categories = [
+  { id: "all", label: "All Products" },
+  { id: "fertilizer", label: "Fertilizers" },
+  { id: "tools", label: "Farming Tools" },
+  { id: "seeds", label: "Seeds" },
+  { id: "products", label: "Farm Products" },
+];
+
+const priceRanges = [
+  { id: "all", label: "All Prices" },
+  { id: "under1000", label: "Under KSh 1,000" },
+  { id: "1000to5000", label: "KSh 1,000 - 5,000" },
+  { id: "over5000", label: "Over KSh 5,000" },
+];
 
 export default Market;
