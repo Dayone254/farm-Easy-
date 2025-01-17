@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useUser } from "@/contexts/UserContext";
-import { MessageCircle, Phone, Search, ArrowLeft, Camera } from "lucide-react";
+import { MessageCircle, Phone, Search, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -34,7 +34,6 @@ const Messages = () => {
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Dummy data for demonstration
   const contacts: Contact[] = [
     {
       id: "1",
@@ -97,9 +96,9 @@ const Messages = () => {
   );
 
   return (
-    <div className="max-w-lg mx-auto bg-white min-h-screen">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-white border-b p-4">
+    <div className="max-w-lg mx-auto bg-white min-h-screen relative">
+      {/* Header - Reduced z-index to stay behind nav */}
+      <div className="sticky top-0 z-40 bg-white border-b p-4">
         <div className="flex items-center justify-between">
           {selectedContact ? (
             <>
@@ -131,9 +130,6 @@ const Messages = () => {
           ) : (
             <>
               <h1 className="text-xl font-semibold">Messages</h1>
-              <Button variant="ghost" size="icon">
-                <Camera className="h-5 w-5" />
-              </Button>
             </>
           )}
         </div>
