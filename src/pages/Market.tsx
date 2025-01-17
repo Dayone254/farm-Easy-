@@ -15,6 +15,7 @@ const Market = () => {
   const [priceRange, setPriceRange] = useState("all");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [isListingFormOpen, setIsListingFormOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const { toast } = useToast();
 
