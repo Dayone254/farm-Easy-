@@ -27,7 +27,7 @@ const SellerDialog = ({ seller, open, onOpenChange }: SellerDialogProps) => {
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={seller.profileImage} />
-              <AvatarFallback>{seller.name[0]}</AvatarFallback>
+              <AvatarFallback>{seller.name?.[0] || '?'}</AvatarFallback>
             </Avatar>
             <div>
               <h3 className="font-semibold flex items-center gap-2">
@@ -47,7 +47,7 @@ const SellerDialog = ({ seller, open, onOpenChange }: SellerDialogProps) => {
 
           <div>
             <h4 className="font-medium mb-2">Previous Sales</h4>
-            {seller.previousSales.length > 0 ? (
+            {seller.previousSales && seller.previousSales.length > 0 ? (
               <div className="space-y-2">
                 {seller.previousSales.map((sale: any, index: number) => (
                   <div key={index} className="flex items-center justify-between text-sm p-2 bg-secondary/20 rounded">
