@@ -43,6 +43,14 @@ const Market = () => {
     });
   };
 
+  const handleProductSubmit = (product: any) => {
+    toast({
+      title: "Product Listed",
+      description: "Your product has been successfully listed in the marketplace.",
+    });
+    setIsListingFormOpen(false);
+  };
+
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
@@ -67,7 +75,6 @@ const Market = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-        {/* Filters Section - Now smaller */}
         <div className="lg:col-span-1">
           <Card className="p-3">
             <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
@@ -135,7 +142,6 @@ const Market = () => {
           </Card>
         </div>
 
-        {/* Products Grid */}
         <div className="lg:col-span-5">
           <ProductGrid 
             category={selectedCategory} 
@@ -157,6 +163,7 @@ const Market = () => {
       <ProductListingForm
         isOpen={isListingFormOpen}
         onClose={() => setIsListingFormOpen(false)}
+        onSubmit={handleProductSubmit}
       />
     </div>
   );

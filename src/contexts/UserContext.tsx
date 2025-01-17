@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 export type UserType = "farmer" | "vendor";
 
 interface UserProfile {
+  id: string;
   name: string;
   phoneNumber: string;
   location: string;
@@ -19,6 +20,7 @@ interface UserContextType {
 }
 
 const defaultProfile: UserProfile = {
+  id: "",
   name: "",
   phoneNumber: "",
   location: "",
