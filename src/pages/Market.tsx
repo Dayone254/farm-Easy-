@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Filter, ShoppingCart } from "lucide-react";
-import ProductGrid from "@/components/ProductGrid";
 import CartDrawer from "@/components/CartDrawer";
-import ProductListingForm from "@/components/ProductListingForm";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -17,7 +15,6 @@ const Market = () => {
   const [priceRange, setPriceRange] = useState("all");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
-  const [isListingFormOpen, setIsListingFormOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const { toast } = useToast();
 
@@ -118,6 +115,11 @@ const Market = () => {
         </div>
 
         <div className="lg:col-span-5">
+          <div className="mb-4 flex justify-end">
+            <Button onClick={() => setIsListingFormOpen(true)} className="bg-accent hover:bg-accent/90">
+              Sell Product
+            </Button>
+          </div>
           <Marketplace />
         </div>
       </div>

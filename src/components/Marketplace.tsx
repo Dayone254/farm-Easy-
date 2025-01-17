@@ -1,4 +1,4 @@
-import { X, UserCheck, ExternalLink } from "lucide-react";
+import { X, UserCheck } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import ProductListingForm from "./ProductListingForm";
+import { Card } from "./ui/card";
 
 const Marketplace = () => {
   const [selectedSeller, setSelectedSeller] = useState(null);
@@ -108,29 +109,28 @@ const Marketplace = () => {
   };
 
   return (
-    <div className="glass-card rounded-lg p-6 hover-scale">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-semibold">Marketplace</h3>
-      </div>
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <div key={product.id} className="bg-white bg-opacity-50 rounded-lg overflow-hidden relative">
+          <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow relative">
             {product.seller.id === userProfile?.id && (
               <button
                 onClick={() => handleRemoveProduct(product.id)}
-                className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors"
+                className="absolute top-2 right-2 z-10 p-1.5 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors"
               >
                 <X className="h-4 w-4 text-red-500" />
               </button>
             )}
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-4">
-              <h4 className="font-medium mb-2">{product.name}</h4>
-              <div className="flex items-center justify-between mb-2">
+            <div className="aspect-video relative">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="p-4 space-y-4">
+              <h4 className="font-semibold text-lg">{product.name}</h4>
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div 
                     className="relative cursor-pointer group"
@@ -140,13 +140,11 @@ const Marketplace = () => {
                       <AvatarImage src={product.seller.profileImage} />
                       <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1">
-                      {product.seller.isVerified && (
-                        <Badge variant="secondary" className="h-5 scale-75">
-                          <UserCheck className="h-3 w-3" />
-                        </Badge>
-                      )}
-                    </div>
+                    {product.seller.isVerified && (
+                      <Badge variant="secondary" className="absolute -bottom-1 -right-1 h-5 scale-75">
+                        <UserCheck className="h-3 w-3" />
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium hover:text-accent cursor-pointer" onClick={() => setSelectedSeller(product.seller)}>
@@ -155,21 +153,22 @@ const Marketplace = () => {
                     <span className="text-xs text-muted-foreground">{product.seller.location}</span>
                   </div>
                 </div>
-                <span className="font-semibold">${product.price}</span>
+                <span className="font-bold text-lg text-primary">
+                  KSh {product.price.toLocaleString()}
+                </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">{product.quantity}</span>
+              <div className="pt-2 border-t">
                 {product.seller.id === userProfile?.id ? (
                   <Button 
                     variant="destructive"
-                    size="sm"
+                    className="w-full"
                     onClick={() => handleMarkAsSold(product.id)}
                   >
                     Mark as Sold
                   </Button>
                 ) : (
                   <Button 
-                    size="sm"
+                    className="w-full"
                     onClick={() => {
                       toast({
                         title: "Contact Seller",
@@ -182,19 +181,9 @@ const Marketplace = () => {
                 )}
               </div>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
-
-      {userProfile?.isVerified && (
-        <Button
-          className="w-full mt-6"
-          variant="outline"
-          onClick={() => setIsListingFormOpen(true)}
-        >
-          List Your Product
-        </Button>
-      )}
 
       <ProductListingForm
         isOpen={isListingFormOpen}
