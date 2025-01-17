@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingCart, X, Trash2, Shield } from "lucide-react";
+import { ShoppingCart, X, Trash2, Shield, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -16,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface CartItem {
   id: number;
@@ -37,13 +38,14 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   if (!open) return null;
 
   const total = items.reduce((sum, item) => sum + item.price, 0);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!phoneNumber || !paymentMethod) {
       toast({
         title: "Error",
@@ -53,15 +55,38 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
       return;
     }
 
-    // Here we would integrate with payment processing and create an escrow order
-    toast({
-      title: "Payment Held in Escrow",
-      description: "Your payment will be held securely until you confirm receipt of your items.",
-      duration: 5000,
-    });
-    
-    setIsCheckoutOpen(false);
-    onClose();
+    setIsProcessing(true);
+
+    try {
+      // Simulate payment request to M-Pesa
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Show payment prompt notification
+      toast({
+        title: "Payment Request Sent",
+        description: "Please check your phone for the M-Pesa payment prompt",
+      });
+
+      // Simulate payment confirmation
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      toast({
+        title: "Payment Successful",
+        description: "Your payment is now held securely in escrow until you receive your items.",
+        duration: 5000,
+      });
+      
+      setIsCheckoutOpen(false);
+      onClose();
+    } catch (error) {
+      toast({
+        title: "Payment Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -134,7 +159,7 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
             disabled={items.length === 0}
             onClick={() => setIsCheckoutOpen(true)}
           >
-            Proceed to Escrow Payment
+            Proceed to Mobile Payment
           </Button>
         </div>
       </div>
@@ -142,9 +167,9 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
       <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Secure Escrow Payment</DialogTitle>
+            <DialogTitle>Mobile Payment & Escrow</DialogTitle>
             <DialogDescription>
-              Your payment will be held securely until you confirm receipt of your items
+              Enter your phone number to receive a payment prompt. Your payment will be held in escrow until you confirm receipt of items.
             </DialogDescription>
           </DialogHeader>
           
@@ -175,16 +200,22 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem }: CartDrawerProps) => 
               </div>
             </div>
 
-            <div className="pt-4">
-              <Button 
-                className="w-full" 
-                onClick={handleCheckout}
-              >
-                <Shield className="w-4 h-4 mr-2" />
-                Pay KSh {total.toLocaleString()} to Escrow
-              </Button>
+            <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg text-sm text-green-700">
+              <Phone className="h-4 w-4" />
+              <span>You will receive a payment prompt on your phone</span>
             </div>
           </div>
+
+          <DialogFooter>
+            <Button 
+              className="w-full" 
+              onClick={handleCheckout}
+              disabled={isProcessing}
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              {isProcessing ? "Processing..." : `Pay KSh ${total.toLocaleString()} via Mobile Money`}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
