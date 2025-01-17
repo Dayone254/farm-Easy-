@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import * as XLSX from 'xlsx';
 import {
   Select,
   SelectContent,
@@ -94,21 +97,77 @@ const Orders = () => {
     return { totalSpent: spent, totalEarned: earned };
   };
 
+  const downloadStatement = () => {
+    // Create worksheet data
+    const wsData = [
+      ['Order ID', 'Date', viewType === 'buying' ? 'Seller' : 'Buyer', 'Items', 'Status', 'Payment Status', 'Amount (KSh)'],
+      ...filteredOrders.map(order => [
+        order.id,
+        new Date().toLocaleDateString(), // You might want to add actual dates to your orders
+        viewType === 'buying' ? order.seller : order.buyer,
+        order.items,
+        order.status,
+        order.paymentStatus,
+        order.price
+      ])
+    ];
+
+    // Add total row
+    const total = filteredOrders.reduce((sum, order) => sum + order.price, 0);
+    wsData.push(['', '', '', '', '', 'Total:', total]);
+
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Style the header row
+    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const address = XLSX.utils.encode_col(C) + '1';
+      if (!ws[address]) continue;
+      ws[address].s = {
+        fill: { fgColor: { rgb: "2F5233" }, patternType: "solid" },
+        font: { color: { rgb: "FFFFFF" }, bold: true }
+      };
+    }
+
+    // Add the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, `${viewType === 'buying' ? 'Purchases' : 'Sales'} Statement`);
+
+    // Generate and download the file
+    XLSX.writeFile(wb, `${viewType === 'buying' ? 'purchases' : 'sales'}_statement.xlsx`);
+
+    toast({
+      title: "Statement Downloaded",
+      description: `Your ${viewType === 'buying' ? 'purchases' : 'sales'} statement has been downloaded.`,
+    });
+  };
+
   const { totalSpent, totalEarned } = calculateFinancials();
 
   return (
     <div className="container mx-auto max-w-7xl">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-[#2F5233]">Orders & Tracking</h1>
-        <Select value={viewType} onValueChange={(value: "buying" | "selling") => setViewType(value)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="View Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="buying">My Purchases</SelectItem>
-            <SelectItem value="selling">My Sales</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-4 items-center">
+          <Button
+            onClick={downloadStatement}
+            variant="outline"
+            className="flex items-center gap-2 border-[#2F5233] text-[#2F5233] hover:bg-[#2F5233] hover:text-cream"
+          >
+            <Download className="h-4 w-4" />
+            Download Statement
+          </Button>
+          <Select value={viewType} onValueChange={(value: "buying" | "selling") => setViewType(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="View Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="buying">My Purchases</SelectItem>
+              <SelectItem value="selling">My Sales</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <FinancialSummary totalSpent={totalSpent} totalEarned={totalEarned} />
