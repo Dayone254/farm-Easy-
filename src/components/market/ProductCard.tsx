@@ -1,4 +1,4 @@
-import { X, UserCheck } from "lucide-react";
+import { X, UserCheck, MessageCircle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,15 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
   const { userProfile } = useUser();
   const { toast } = useToast();
 
+  const handleContactSeller = () => {
+    toast({
+      title: "Contact Seller",
+      description: `Contact ${product.seller.name} to purchase this item.`,
+    });
+  };
+
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow relative animate-fade-up">
       {product.seller.id === userProfile?.id && (
         <button
           onClick={() => onRemove(product.id)}
@@ -27,6 +34,7 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
           <X className="h-4 w-4 text-red-500" />
         </button>
       )}
+      
       <div className="aspect-video relative">
         <img
           src={product.image}
@@ -34,9 +42,16 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
           className="w-full h-full object-cover"
         />
       </div>
+
       <div className="p-4 space-y-4">
-        <h4 className="font-semibold text-lg">{product.name}</h4>
         <div className="flex items-center justify-between">
+          <h4 className="font-semibold text-lg">{product.name}</h4>
+          <span className="font-bold text-lg text-primary">
+            KSh {product.price.toLocaleString()}
+          </span>
+        </div>
+
+        <div className="flex items-center justify-between border-t pt-4">
           <div className="flex items-center gap-2">
             <div 
               className="relative cursor-pointer group"
@@ -53,17 +68,22 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
               )}
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium hover:text-accent cursor-pointer" onClick={() => onSellerClick(product.seller)}>
+              <span 
+                className="text-sm font-medium hover:text-accent cursor-pointer" 
+                onClick={() => onSellerClick(product.seller)}
+              >
                 {product.seller.name}
               </span>
-              <span className="text-xs text-muted-foreground">{product.seller.location}</span>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>{product.seller.location}</span>
+                <span>•</span>
+                <span>{product.seller.previousSales?.length || 0} sales</span>
+              </div>
             </div>
           </div>
-          <span className="font-bold text-lg text-primary">
-            KSh {product.price.toLocaleString()}
-          </span>
         </div>
-        <div className="pt-2 border-t">
+
+        <div className="pt-2 border-t space-y-2">
           {product.seller.id === userProfile?.id ? (
             <Button 
               variant="destructive"
@@ -75,13 +95,9 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
           ) : (
             <Button 
               className="w-full"
-              onClick={() => {
-                toast({
-                  title: "Contact Seller",
-                  description: `Contact ${product.seller.name} to purchase this item.`,
-                });
-              }}
+              onClick={handleContactSeller}
             >
+              <MessageCircle className="w-4 h-4 mr-2" />
               Contact Seller
             </Button>
           )}
