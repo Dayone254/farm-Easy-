@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,16 +29,17 @@ const formSchema = z.object({
   price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
     message: "Price must be a positive number",
   }),
-  location: z.string().min(2, "Location must be at least 2 characters"),
+  quantity: z.string().min(1, "Quantity is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
 });
 
 interface ProductListingFormProps {
   onClose: () => void;
   isOpen: boolean;
+  onSubmit: (product: any) => void;
 }
 
-const ProductListingForm = ({ onClose, isOpen }: ProductListingFormProps) => {
+const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormProps) => {
   const { toast } = useToast();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -48,7 +49,7 @@ const ProductListingForm = ({ onClose, isOpen }: ProductListingFormProps) => {
       name: "",
       category: "",
       price: "",
-      location: "",
+      quantity: "",
       description: "",
     },
   });
@@ -64,12 +65,14 @@ const ProductListingForm = ({ onClose, isOpen }: ProductListingFormProps) => {
     }
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log("Form submitted:", values);
-    toast({
-      title: "Product Listed",
-      description: "Your product has been successfully listed in the marketplace.",
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    onSubmit({
+      ...values,
+      price: Number(values.price),
+      image: imagePreview || "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=400&h=250",
     });
+    form.reset();
+    setImagePreview(null);
     onClose();
   };
 
@@ -90,7 +93,7 @@ const ProductListingForm = ({ onClose, isOpen }: ProductListingFormProps) => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="name"
@@ -200,7 +203,6 @@ const ProductListingForm = ({ onClose, isOpen }: ProductListingFormProps) => {
                 </div>
               )}
             </div>
-
             <Button type="submit" className="w-full">
               List Product
             </Button>

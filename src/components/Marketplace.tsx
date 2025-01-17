@@ -1,4 +1,4 @@
-import { ShoppingCart, Plus, UserCheck, ExternalLink } from "lucide-react";
+import { X, UserCheck, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import {
   Dialog,
@@ -8,16 +8,23 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
+import ProductListingForm from "./ProductListingForm";
 
 const Marketplace = () => {
   const [selectedSeller, setSelectedSeller] = useState(null);
+  const [isListingFormOpen, setIsListingFormOpen] = useState(false);
   const { userProfile } = useUser();
+  const { toast } = useToast();
 
-  const products = [
+  const [products, setProducts] = useState([
     {
+      id: 1,
       name: "Organic Wheat",
       seller: {
+        id: "seller1",
         name: "Farm Fresh Co.",
         isVerified: true,
         profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
@@ -62,17 +69,60 @@ const Marketplace = () => {
       price: 149,
       image: "https://images.unsplash.com/photo-1438565434616-3ef039228b15?auto=format&fit=crop&w=400&h=250",
     },
-  ];
+  ]);
+
+  const handleAddProduct = (newProduct) => {
+    setProducts(prev => [{
+      id: Date.now(),
+      seller: {
+        id: userProfile?.id,
+        name: userProfile?.name,
+        isVerified: userProfile?.isVerified,
+        profileImage: userProfile?.profileImage || "",
+        location: userProfile?.location,
+        joinedDate: new Date().getFullYear().toString(),
+        previousSales: [],
+      },
+      ...newProduct
+    }, ...prev]);
+    
+    toast({
+      title: "Product Listed",
+      description: "Your product has been successfully added to the marketplace.",
+    });
+  };
+
+  const handleMarkAsSold = (productId) => {
+    setProducts(prev => prev.filter(product => product.id !== productId));
+    toast({
+      title: "Product Marked as Sold",
+      description: "The product has been removed from the marketplace.",
+    });
+  };
+
+  const handleRemoveProduct = (productId) => {
+    setProducts(prev => prev.filter(product => product.id !== productId));
+    toast({
+      description: "Product removed from marketplace",
+    });
+  };
 
   return (
     <div className="glass-card rounded-lg p-6 hover-scale">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold">Marketplace</h3>
-        <ShoppingCart className="w-8 h-8 text-accent" />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <div key={product.name} className="bg-white bg-opacity-50 rounded-lg overflow-hidden">
+          <div key={product.id} className="bg-white bg-opacity-50 rounded-lg overflow-hidden relative">
+            {product.seller.id === userProfile?.id && (
+              <button
+                onClick={() => handleRemoveProduct(product.id)}
+                className="absolute top-2 right-2 p-1 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors"
+              >
+                <X className="h-4 w-4 text-red-500" />
+              </button>
+            )}
             <img
               src={product.image}
               alt={product.name}
@@ -109,9 +159,27 @@ const Marketplace = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm">{product.quantity}</span>
-                <button className="bg-accent text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
-                  Buy Now
-                </button>
+                {product.seller.id === userProfile?.id ? (
+                  <Button 
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleMarkAsSold(product.id)}
+                  >
+                    Mark as Sold
+                  </Button>
+                ) : (
+                  <Button 
+                    size="sm"
+                    onClick={() => {
+                      toast({
+                        title: "Contact Seller",
+                        description: `Contact ${product.seller.name} to purchase this item.`,
+                      });
+                    }}
+                  >
+                    Contact Seller
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -119,11 +187,20 @@ const Marketplace = () => {
       </div>
 
       {userProfile?.isVerified && (
-        <button className="w-full mt-6 flex items-center justify-center gap-2 py-3 border-2 border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-colors">
-          <Plus className="w-5 h-5" />
-          <span>List Your Product</span>
-        </button>
+        <Button
+          className="w-full mt-6"
+          variant="outline"
+          onClick={() => setIsListingFormOpen(true)}
+        >
+          List Your Product
+        </Button>
       )}
+
+      <ProductListingForm
+        isOpen={isListingFormOpen}
+        onClose={() => setIsListingFormOpen(false)}
+        onSubmit={handleAddProduct}
+      />
 
       <Dialog open={!!selectedSeller} onOpenChange={() => setSelectedSeller(null)}>
         <DialogContent className="sm:max-w-[425px]">
