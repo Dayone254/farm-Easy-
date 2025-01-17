@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
+export type UserType = "farmer" | "vendor";
+
 interface UserProfile {
   name: string;
   phoneNumber: string;
@@ -7,6 +9,7 @@ interface UserProfile {
   isVerified: boolean;
   profileImage: string | null;
   bio: string;
+  userType: UserType;
 }
 
 interface UserContextType {
@@ -22,6 +25,7 @@ const defaultProfile: UserProfile = {
   isVerified: false,
   profileImage: null,
   bio: "",
+  userType: "farmer",
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);

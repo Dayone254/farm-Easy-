@@ -2,19 +2,25 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu, Calculator, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/contexts/UserContext";
 
 const Navigation = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { userProfile } = useUser();
 
   const navItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-    { icon: CloudSun, label: "Weather", path: "/weather" },
-    { icon: Sprout, label: "Crops", path: "/crops" },
-    { icon: DollarSign, label: "Market", path: "/market" },
-    { icon: Package, label: "Orders", path: "/orders" },
-    { icon: Calculator, label: "Financing", path: "/financing" },
-    { icon: UserCheck, label: "Profile", path: "/profile" },
+    { icon: LayoutDashboard, label: "Dashboard", path: "/", showFor: ["farmer", "vendor"] },
+    { icon: CloudSun, label: "Weather", path: "/weather", showFor: ["farmer"] },
+    { icon: Sprout, label: "Crops", path: "/crops", showFor: ["farmer"] },
+    { icon: DollarSign, label: "Market", path: "/market", showFor: ["farmer", "vendor"] },
+    { icon: Package, label: "Orders", path: "/orders", showFor: ["farmer", "vendor"] },
+    { icon: Calculator, label: "Financing", path: "/financing", showFor: ["farmer", "vendor"] },
+    { icon: UserCheck, label: "Profile", path: "/profile", showFor: ["farmer", "vendor"] },
   ];
+
+  const filteredNavItems = navItems.filter(item => 
+    item.showFor.includes(userProfile?.userType || "farmer")
+  );
 
   return (
     <nav
@@ -35,7 +41,7 @@ const Navigation = () => {
           </button>
 
           <div className="hidden md:flex items-center space-x-4">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
@@ -51,7 +57,7 @@ const Navigation = () => {
         {/* Mobile menu */}
         {isExpanded && (
           <div className="md:hidden py-4">
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
