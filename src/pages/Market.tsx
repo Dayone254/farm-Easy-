@@ -19,16 +19,18 @@ const Market = () => {
   const [isListingFormOpen, setIsListingFormOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const { toast } = useToast();
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<any[]>([]);
 
-  const handleAddProduct = (newProduct) => {
-    setProducts(prev => [newProduct, ...prev]);
+  const handleAddProduct = (newProduct: any) => {
+    setProducts(prevProducts => [newProduct, ...prevProducts]);
     setIsListingFormOpen(false);
     toast({
       title: "Product Listed",
       description: "Your product has been successfully added to the marketplace.",
     });
   };
+
+  // ... keep existing code (rest of the component)
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -118,14 +120,13 @@ const Market = () => {
           </Card>
         </div>
 
-        <div className="lg:col-span-5">
-          <div className="mb-4 flex justify-end">
-            <Button onClick={() => setIsListingFormOpen(true)} className="bg-accent hover:bg-accent/90">
-              Sell Product
-            </Button>
-          </div>
-          <Marketplace products={products} setProducts={setProducts} />
+      <div className="lg:col-span-5">
+        <div className="mb-4 flex justify-end">
+          <Button onClick={() => setIsListingFormOpen(true)} className="bg-accent hover:bg-accent/90">
+            Sell Product
+          </Button>
         </div>
+        <Marketplace products={products} setProducts={setProducts} />
       </div>
 
       <CartDrawer 

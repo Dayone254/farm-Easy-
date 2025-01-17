@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useUser } from "@/contexts/UserContext";
 import {
   Select,
   SelectContent,
@@ -31,7 +32,7 @@ const formSchema = z.object({
   }),
   quantity: z.string().min(1, "Quantity is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  location: z.string().min(2, "Location must be at least 2 characters"), // Added location to schema
+  location: z.string().min(2, "Location must be at least 2 characters"),
 });
 
 interface ProductListingFormProps {
@@ -42,6 +43,7 @@ interface ProductListingFormProps {
 
 const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormProps) => {
   const { toast } = useToast();
+  const { userProfile } = useUser();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -52,6 +54,7 @@ const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormPro
       price: "",
       quantity: "",
       description: "",
+      location: "",
     },
   });
 
@@ -67,14 +70,38 @@ const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormPro
   };
 
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    onSubmit({
+    if (!userProfile) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "You must be logged in to list a product",
+      });
+      return;
+    }
+
+    const newProduct = {
+      id: Date.now(),
       ...values,
       price: Number(values.price),
       image: imagePreview || "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=400&h=250",
-    });
+      seller: {
+        id: userProfile.id,
+        name: userProfile.name,
+        location: values.location,
+        profileImage: userProfile.profileImage || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + userProfile.name,
+        isVerified: userProfile.isVerified || false,
+      }
+    };
+
+    onSubmit(newProduct);
     form.reset();
     setImagePreview(null);
     onClose();
+    
+    toast({
+      title: "Success",
+      description: "Your product has been listed successfully",
+    });
   };
 
   if (!isOpen) return null;
@@ -204,6 +231,7 @@ const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormPro
                 </div>
               )}
             </div>
+
             <Button type="submit" className="w-full">
               List Product
             </Button>
