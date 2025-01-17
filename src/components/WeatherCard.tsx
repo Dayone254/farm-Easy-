@@ -30,24 +30,24 @@ const WeatherCard = () => {
   }));
 
   return (
-    <Card className="w-full bg-[#2B2D42] text-white p-6 rounded-xl">
+    <Card className="w-full bg-primary/95 text-cream p-6 rounded-xl">
       <div className="space-y-8">
         {/* Current Weather Section */}
         <div className="flex justify-between items-start">
           <div>
-            <div className="text-6xl font-light mb-2">{currentTemp}°</div>
-            <div className="flex items-center gap-2 text-gray-300">
+            <div className="text-6xl font-light mb-2 text-cream">{currentTemp}°</div>
+            <div className="flex items-center gap-2 text-cream/80">
               <MapPin className="h-4 w-4" />
               <span>{location}</span>
             </div>
-            <div className="mt-1 text-gray-300">{condition}</div>
-            <div className="text-sm text-gray-400 mt-1">
+            <div className="mt-1 text-cream/80">{condition}</div>
+            <div className="text-sm text-cream/70 mt-1">
               Feels like {feelsLike}°
             </div>
           </div>
           <div className="text-right">
-            <Moon className="h-16 w-16 text-yellow-300 mb-2" />
-            <div className="text-sm text-gray-300">
+            <Moon className="h-16 w-16 text-cream mb-2" />
+            <div className="text-sm text-cream/80">
               H: {highTemp}° L: {lowTemp}°
             </div>
           </div>
@@ -55,7 +55,7 @@ const WeatherCard = () => {
 
         {/* Hourly Forecast */}
         <div className="space-y-4">
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-cream/70">
             Partly cloudy. Highs in the upper 70s and lows in the low 60s.
           </div>
           
@@ -65,15 +65,15 @@ const WeatherCard = () => {
                 key={index}
                 className="flex flex-col items-center text-center space-y-2"
               >
-                <span className="text-sm text-gray-400">{hour.time}</span>
+                <span className="text-sm text-cream/70">{hour.time}</span>
                 {hour.icon === "Sun" ? (
-                  <Sun className="h-5 w-5 text-yellow-300" />
+                  <Sun className="h-5 w-5 text-cream" />
                 ) : hour.icon === "Moon" ? (
-                  <Moon className="h-5 w-5 text-yellow-300" />
+                  <Moon className="h-5 w-5 text-cream" />
                 ) : (
-                  <Cloud className="h-5 w-5 text-gray-400" />
+                  <Cloud className="h-5 w-5 text-cream/80" />
                 )}
-                <span className="text-sm">{hour.temp}°</span>
+                <span className="text-sm text-cream">{hour.temp}°</span>
               </div>
             ))}
           </div>
@@ -84,16 +84,17 @@ const WeatherCard = () => {
               <LineChart data={chartData}>
                 <XAxis
                   dataKey="name"
-                  stroke="#9CA3AF"
+                  stroke="#F5F5DC"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
+                  opacity={0.7}
                 />
                 <YAxis hide />
                 <Line
                   type="monotone"
                   dataKey="temperature"
-                  stroke="#60A5FA"
+                  stroke="#F5F5DC"
                   strokeWidth={2}
                   dot={false}
                 />
@@ -104,15 +105,15 @@ const WeatherCard = () => {
 
         {/* Trending Section */}
         <div className="space-y-2">
-          <h3 className="text-gray-400">Trending Now</h3>
-          <div className="bg-[#373952] rounded-lg p-4">
-            <p className="text-sm">Weather Alert: Clear skies expected throughout the week</p>
+          <h3 className="text-cream/70">Trending Now</h3>
+          <div className="bg-secondary/80 rounded-lg p-4">
+            <p className="text-sm text-cream">Weather Alert: Clear skies expected throughout the week</p>
             <div className="flex gap-1 mt-2">
               {[1, 2, 3, 4, 5].map((dot) => (
                 <div
                   key={dot}
                   className={`h-1 w-1 rounded-full ${
-                    dot === 1 ? "bg-blue-400" : "bg-gray-600"
+                    dot === 1 ? "bg-accent" : "bg-cream/30"
                   }`}
                 />
               ))}
