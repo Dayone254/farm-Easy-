@@ -12,6 +12,7 @@ import Orders from "./pages/Orders";
 import Weather from "./pages/Weather";
 import Financing from "./pages/Financing";
 import Profile from "./pages/Profile";
+import Messages from "./pages/Messages";
 import Login from "./pages/Login";
 import { useUser } from "./contexts/UserContext";
 
@@ -39,6 +40,7 @@ const AppRoutes = () => {
           <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
           <Route path="/financing" element={<ProtectedRoute><Financing /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>
