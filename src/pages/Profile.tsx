@@ -2,9 +2,9 @@ import { useUser } from "@/contexts/UserContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useState } from "react";
 
 const Profile = () => {
@@ -20,7 +20,6 @@ const Profile = () => {
       phoneNumber: formData.get("phoneNumber") as string,
       location: formData.get("location") as string,
       bio: formData.get("bio") as string,
-      userType: formData.get("userType") as "farmer" | "vendor",
     };
 
     updateProfile(updates);
@@ -44,27 +43,22 @@ const Profile = () => {
 
   return (
     <div className="container max-w-2xl mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8">Profile Settings</h1>
+      <div className="text-center mb-8">
+        <Avatar className="w-32 h-32 mx-auto mb-4">
+          <AvatarImage src={userProfile?.profileImage || ""} alt={userProfile?.name} />
+          <AvatarFallback className="text-2xl">
+            {userProfile?.name?.charAt(0)?.toUpperCase() || "?"}
+          </AvatarFallback>
+        </Avatar>
+        <h1 className="text-3xl font-bold text-[#2F5233]">
+          Welcome, {userProfile?.name || "User"}!
+        </h1>
+        <p className="text-gray-600">
+          {userProfile?.userType === "farmer" ? "Farmer" : "Vendor"}
+        </p>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2">
-          <Label>User Type</Label>
-          <RadioGroup
-            name="userType"
-            defaultValue={userProfile?.userType || "farmer"}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="farmer" id="farmer" />
-              <Label htmlFor="farmer">Farmer</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="vendor" id="vendor" />
-              <Label htmlFor="vendor">Vendor</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="name">Full Name</Label>
           <Input
@@ -115,13 +109,6 @@ const Profile = () => {
             onChange={handleImageChange}
             className="cursor-pointer"
           />
-          {userProfile?.profileImage && (
-            <img
-              src={userProfile.profileImage}
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover mt-2"
-            />
-          )}
         </div>
 
         <Button type="submit" className="w-full">
