@@ -19,6 +19,16 @@ const Market = () => {
   const [isListingFormOpen, setIsListingFormOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const { toast } = useToast();
+  const [products, setProducts] = useState([]);
+
+  const handleAddProduct = (newProduct) => {
+    setProducts(prev => [newProduct, ...prev]);
+    setIsListingFormOpen(false);
+    toast({
+      title: "Product Listed",
+      description: "Your product has been successfully added to the marketplace.",
+    });
+  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -114,7 +124,7 @@ const Market = () => {
               Sell Product
             </Button>
           </div>
-          <Marketplace />
+          <Marketplace products={products} setProducts={setProducts} />
         </div>
       </div>
 
@@ -130,13 +140,7 @@ const Market = () => {
       <ProductListingForm
         isOpen={isListingFormOpen}
         onClose={() => setIsListingFormOpen(false)}
-        onSubmit={(product) => {
-          toast({
-            title: "Product Listed",
-            description: "Your product has been successfully added to the marketplace.",
-          });
-          setIsListingFormOpen(false);
-        }}
+        onSubmit={handleAddProduct}
       />
     </div>
   );

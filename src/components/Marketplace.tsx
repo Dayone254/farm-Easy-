@@ -1,5 +1,4 @@
 import { X, UserCheck } from "lucide-react";
-import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,87 +10,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
-import ProductListingForm from "./ProductListingForm";
 import { Card } from "./ui/card";
 
-const Marketplace = () => {
+interface MarketplaceProps {
+  products: any[];
+  setProducts: (products: any[]) => void;
+}
+
+const Marketplace = ({ products, setProducts }: MarketplaceProps) => {
   const [selectedSeller, setSelectedSeller] = useState(null);
-  const [isListingFormOpen, setIsListingFormOpen] = useState(false);
   const { userProfile } = useUser();
   const { toast } = useToast();
-
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "Organic Wheat",
-      seller: {
-        id: "seller1",
-        name: "Farm Fresh Co.",
-        isVerified: true,
-        profileImage: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
-        location: "Nairobi",
-        joinedDate: "2023",
-        previousSales: [
-          { item: "Premium Rice", date: "2024-01-15", rating: 4.5 },
-          { item: "Organic Corn", date: "2024-01-10", rating: 5 },
-        ],
-      },
-      quantity: "100kg",
-      price: 299,
-      image: "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=400&h=250",
-    },
-    {
-      name: "Premium Rice",
-      seller: {
-        name: "Green Fields",
-        isVerified: false,
-        profileImage: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200",
-        location: "Mombasa",
-        joinedDate: "2024",
-        previousSales: [],
-      },
-      quantity: "50kg",
-      price: 199,
-      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=400&h=250",
-    },
-    {
-      name: "Fresh Corn",
-      seller: {
-        name: "Harvest Hub",
-        isVerified: true,
-        profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200",
-        location: "Kisumu",
-        joinedDate: "2023",
-        previousSales: [
-          { item: "Organic Wheat", date: "2024-01-20", rating: 4.8 },
-        ],
-      },
-      quantity: "75kg",
-      price: 149,
-      image: "https://images.unsplash.com/photo-1438565434616-3ef039228b15?auto=format&fit=crop&w=400&h=250",
-    },
-  ]);
-
-  const handleAddProduct = (newProduct) => {
-    setProducts(prev => [{
-      id: Date.now(),
-      seller: {
-        id: userProfile?.id,
-        name: userProfile?.name,
-        isVerified: userProfile?.isVerified,
-        profileImage: userProfile?.profileImage || "",
-        location: userProfile?.location,
-        joinedDate: new Date().getFullYear().toString(),
-        previousSales: [],
-      },
-      ...newProduct
-    }, ...prev]);
-    
-    toast({
-      title: "Product Listed",
-      description: "Your product has been successfully added to the marketplace.",
-    });
-  };
 
   const handleMarkAsSold = (productId) => {
     setProducts(prev => prev.filter(product => product.id !== productId));
@@ -184,12 +113,6 @@ const Marketplace = () => {
           </Card>
         ))}
       </div>
-
-      <ProductListingForm
-        isOpen={isListingFormOpen}
-        onClose={() => setIsListingFormOpen(false)}
-        onSubmit={handleAddProduct}
-      />
 
       <Dialog open={!!selectedSeller} onOpenChange={() => setSelectedSeller(null)}>
         <DialogContent className="sm:max-w-[425px]">
