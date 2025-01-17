@@ -121,7 +121,7 @@ const Market = () => {
         <div className="lg:col-span-5">
           <div className="mb-4 flex justify-end">
             <Button onClick={() => setIsListingFormOpen(true)} className="bg-accent hover:bg-accent/90">
-              Sell Product
+              List Product
             </Button>
           </div>
           <Marketplace products={products} setProducts={setProducts} />
