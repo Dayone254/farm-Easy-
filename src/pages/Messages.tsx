@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { MessageCircle, Phone, Search, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useLocation } from "react-router-dom";
 
 interface Message {
   id: string;
@@ -30,52 +31,77 @@ interface Contact {
 const Messages = () => {
   const { userProfile } = useUser();
   const { toast } = useToast();
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const location = useLocation();
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(
+    location.state?.selectedContact || null
+  );
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
-  const contacts: Contact[] = [
-    {
-      id: "1",
-      name: "John Doe",
-      userType: "farmer",
-      profileImage: null,
-      lastMessage: "Hello, is the maize still available?",
-      lastMessageTime: new Date(),
-      phoneNumber: "+254712345678",
-      status: "Active now"
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      userType: "vendor",
-      profileImage: null,
-      lastMessage: "I'm interested in buying your wheat.",
-      lastMessageTime: new Date(),
-      phoneNumber: "+254723456789",
-      status: "6w"
+  // Load messages and contacts from localStorage on component mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem("messages");
+    const savedContacts = localStorage.getItem("contacts");
+    
+    if (savedMessages) {
+      const parsedMessages = JSON.parse(savedMessages);
+      setMessages(parsedMessages.map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      })));
     }
-  ];
+    
+    if (savedContacts) {
+      const parsedContacts = JSON.parse(savedContacts);
+      setContacts(parsedContacts);
+    }
 
-  const [messages] = useState<Message[]>([
-    {
-      id: "1",
-      senderId: "1",
-      receiverId: userProfile?.id || "",
-      content: "Hello, is the maize still available?",
-      timestamp: new Date()
-    },
-    {
-      id: "2",
-      senderId: userProfile?.id || "",
-      receiverId: "1",
-      content: "Yes, it is! Would you like to make an offer?",
-      timestamp: new Date()
+    // If we have a new contact from navigation state, add them to contacts
+    if (location.state?.selectedContact && !contacts.find(c => c.id === location.state.selectedContact.id)) {
+      const newContact = location.state.selectedContact;
+      setContacts(prev => [...prev, newContact]);
+      localStorage.setItem("contacts", JSON.stringify([...contacts, newContact]));
     }
-  ]);
+  }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("messages", JSON.stringify(messages));
+  }, [messages]);
+
+  // Save contacts to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("contacts", JSON.stringify(contacts));
+  }, [contacts]);
 
   const handleSendMessage = () => {
-    if (!messageInput.trim() || !selectedContact) return;
+    if (!messageInput.trim() || !selectedContact || !userProfile) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      senderId: userProfile.id,
+      receiverId: selectedContact.id,
+      content: messageInput.trim(),
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, newMessage]);
+    
+    // Update contact's last message
+    const updatedContacts = contacts.map(contact => {
+      if (contact.id === selectedContact.id) {
+        return {
+          ...contact,
+          lastMessage: messageInput.trim(),
+          lastMessageTime: new Date(),
+        };
+      }
+      return contact;
+    });
+    setContacts(updatedContacts);
+
     toast({
       title: "Message Sent",
       description: `Your message has been sent to ${selectedContact.name}`,
@@ -95,10 +121,17 @@ const Messages = () => {
     contact.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredMessages = messages.filter(message =>
+    selectedContact && (
+      (message.senderId === userProfile?.id && message.receiverId === selectedContact.id) ||
+      (message.receiverId === userProfile?.id && message.senderId === selectedContact.id)
+    )
+  );
+
   return (
     <div className="max-w-lg mx-auto bg-white min-h-screen relative">
-      {/* Header - Reduced z-index to stay behind nav */}
-      <div className="sticky top-0 z-40 bg-white border-b p-4">
+      {/* Header */}
+      <div className="sticky top-16 z-40 bg-white border-b p-4">
         <div className="flex items-center justify-between">
           {selectedContact ? (
             <>
@@ -128,9 +161,7 @@ const Messages = () => {
               </Button>
             </>
           ) : (
-            <>
-              <h1 className="text-xl font-semibold">Messages</h1>
-            </>
+            <h1 className="text-xl font-semibold">Messages</h1>
           )}
         </div>
       </div>
@@ -140,7 +171,7 @@ const Messages = () => {
           {/* Chat Messages */}
           <ScrollArea className="h-[calc(100vh-8rem)] px-4">
             <div className="space-y-4 py-4">
-              {messages.map((message) => (
+              {filteredMessages.map((message) => (
                 <div
                   key={message.id}
                   className={cn(
@@ -158,7 +189,7 @@ const Messages = () => {
                   >
                     <p>{message.content}</p>
                     <span className="text-xs opacity-70 mt-1 block">
-                      {message.timestamp.toLocaleTimeString([], {
+                      {new Date(message.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit"
                       })}
