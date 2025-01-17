@@ -69,7 +69,7 @@ const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormPro
     }
   };
 
-  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!userProfile) {
       toast({
         variant: "destructive",
@@ -93,15 +93,24 @@ const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormPro
       }
     };
 
-    onSubmit(newProduct);
-    form.reset();
-    setImagePreview(null);
-    onClose();
-    
-    toast({
-      title: "Success",
-      description: "Your product has been listed successfully",
-    });
+    try {
+      await onSubmit(newProduct);
+      form.reset();
+      setImagePreview(null);
+      onClose();
+      
+      toast({
+        title: "Success",
+        description: "Your product has been listed successfully",
+      });
+    } catch (error) {
+      console.error('Error submitting product:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to list product. Please try again.",
+      });
+    }
   };
 
   if (!isOpen) return null;
@@ -183,6 +192,20 @@ const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormPro
 
             <FormField
               control={form.control}
+              name="quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Quantity</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter quantity" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="location"
               render={({ field }) => (
                 <FormItem>
@@ -232,7 +255,7 @@ const ProductListingForm = ({ onClose, isOpen, onSubmit }: ProductListingFormPro
               )}
             </div>
 
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full bg-primary hover:bg-primary/90">
               List Product
             </Button>
           </form>
