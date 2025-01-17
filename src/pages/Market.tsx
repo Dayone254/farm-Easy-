@@ -9,6 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Marketplace from "@/components/Marketplace";
+import ProductListingForm from "@/components/ProductListingForm";
 
 const Market = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -18,14 +19,6 @@ const Market = () => {
   const [isListingFormOpen, setIsListingFormOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
   const { toast } = useToast();
-
-  const handleAddToCart = (product) => {
-    setCartItems(prev => [...prev, product]);
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
-  };
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -131,6 +124,18 @@ const Market = () => {
         items={cartItems}
         onRemoveItem={(index) => {
           setCartItems(prev => prev.filter((_, i) => i !== index));
+        }}
+      />
+
+      <ProductListingForm
+        isOpen={isListingFormOpen}
+        onClose={() => setIsListingFormOpen(false)}
+        onSubmit={(product) => {
+          toast({
+            title: "Product Listed",
+            description: "Your product has been successfully added to the marketplace.",
+          });
+          setIsListingFormOpen(false);
         }}
       />
     </div>
