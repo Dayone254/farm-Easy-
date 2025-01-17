@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
   product: any;
@@ -16,11 +17,20 @@ interface ProductCardProps {
 const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: ProductCardProps) => {
   const { userProfile } = useUser();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleContactSeller = () => {
-    toast({
-      title: "Contact Seller",
-      description: `Contact ${product.seller.name} to purchase this item.`,
+    navigate("/messages", { 
+      state: { 
+        selectedContact: {
+          id: product.seller.id,
+          name: product.seller.name,
+          userType: product.seller.userType || "seller",
+          profileImage: product.seller.profileImage,
+          phoneNumber: product.seller.phoneNumber || "",
+          status: "Active now"
+        }
+      }
     });
   };
 
@@ -98,7 +108,7 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
               onClick={handleContactSeller}
             >
               <MessageCircle className="w-4 h-4 mr-2" />
-              Contact Seller
+              Message Seller
             </Button>
           )}
         </div>
