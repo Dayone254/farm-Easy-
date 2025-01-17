@@ -20,6 +20,8 @@ const Index = () => {
     },
   ]);
 
+  const [products, setProducts] = useState<any[]>([]);
+
   const handleStatusChange = (orderId: string, newStatus: "Pending" | "In Transit" | "Delivered" | "Cancelled" | "Payment Held" | "Payment Released") => {
     // Handle status change logic here
     console.log(`Order ${orderId} status changed to ${newStatus}`);
@@ -52,7 +54,7 @@ const Index = () => {
         </div>
 
         <div className="fade-in">
-          <Marketplace />
+          <Marketplace products={products} setProducts={setProducts} />
         </div>
       </div>
     </div>

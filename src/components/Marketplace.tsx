@@ -1,4 +1,5 @@
 import { X, UserCheck } from "lucide-react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,16 +23,16 @@ const Marketplace = ({ products, setProducts }: MarketplaceProps) => {
   const { userProfile } = useUser();
   const { toast } = useToast();
 
-  const handleMarkAsSold = (productId) => {
-    setProducts(prev => prev.filter(product => product.id !== productId));
+  const handleMarkAsSold = (productId: string | number) => {
+    setProducts(products.filter(product => product.id !== productId));
     toast({
       title: "Product Marked as Sold",
       description: "The product has been removed from the marketplace.",
     });
   };
 
-  const handleRemoveProduct = (productId) => {
-    setProducts(prev => prev.filter(product => product.id !== productId));
+  const handleRemoveProduct = (productId: string | number) => {
+    setProducts(products.filter(product => product.id !== productId));
     toast({
       description: "Product removed from marketplace",
     });
