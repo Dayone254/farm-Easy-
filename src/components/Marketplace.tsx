@@ -19,7 +19,7 @@ interface MarketplaceProps {
 }
 
 const Marketplace = ({ products, setProducts }: MarketplaceProps) => {
-  const [selectedSeller, setSelectedSeller] = useState(null);
+  const [selectedSeller, setSelectedSeller] = useState<any>(null);
   const { userProfile } = useUser();
   const { toast } = useToast();
 
