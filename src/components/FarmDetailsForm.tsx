@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,10 +14,10 @@ interface FarmDetailsFormProps {
 
 const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   const { toast } = useToast();
-  const { setFarmDetails, clearFarmDetails } = useFarmStore((state) => ({
-    setFarmDetails: state.setFarmDetails,
-    clearFarmDetails: state.clearFarmDetails,
-  }));
+  
+  // Memoize the store selectors to prevent unnecessary re-renders
+  const setFarmDetails = useFarmStore(useCallback(state => state.setFarmDetails, []));
+  const clearFarmDetails = useFarmStore(useCallback(state => state.clearFarmDetails, []));
   
   const [crops, setCrops] = useState<CropDetail[]>([]);
   const [location, setLocation] = useState("");
@@ -34,7 +34,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  const getUserLocation = () => {
+  const getUserLocation = useCallback(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -64,9 +64,9 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
-  const analyzeSoil = async (lat?: number, long?: number) => {
+  const analyzeSoil = useCallback(async (lat?: number, long?: number) => {
     const latitude = lat || parseFloat(coordinates.latitude);
     const longitude = long || parseFloat(coordinates.longitude);
 
@@ -114,11 +114,11 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [coordinates.latitude, coordinates.longitude, toast]);
 
-  const addCrop = () => {
-    setCrops([
-      ...crops,
+  const addCrop = useCallback(() => {
+    setCrops(prevCrops => [
+      ...prevCrops,
       {
         name: "",
         area: "",
@@ -127,31 +127,31 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
         status: "Healthy",
       },
     ]);
-  };
+  }, []);
 
-  const removeCrop = (index: number) => {
-    setCrops(crops.filter((_, i) => i !== index));
-  };
+  const removeCrop = useCallback((index: number) => {
+    setCrops(prevCrops => prevCrops.filter((_, i) => i !== index));
+  }, []);
 
-  const updateCrop = (index: number, field: keyof CropDetail, value: string) => {
-    const newCrops = [...crops];
-    newCrops[index] = { ...newCrops[index], [field]: value };
-    
-    if (field === "plantingDate" && value) {
-      setIsAnalyzing(true);
-      setTimeout(() => {
-        const plantDate = new Date(value);
-        const harvestDate = new Date(plantDate.setDate(plantDate.getDate() + Math.floor(Math.random() * 60) + 60));
-        newCrops[index].expectedHarvest = harvestDate.toISOString().split('T')[0];
-        setCrops(newCrops);
-        setIsAnalyzing(false);
-      }, 1500);
-    }
-    
-    setCrops(newCrops);
-  };
+  const updateCrop = useCallback((index: number, field: keyof CropDetail, value: string) => {
+    setCrops(prevCrops => {
+      const newCrops = [...prevCrops];
+      newCrops[index] = { ...newCrops[index], [field]: value };
+      
+      if (field === "plantingDate" && value) {
+        setTimeout(() => {
+          const plantDate = new Date(value);
+          const harvestDate = new Date(plantDate.setDate(plantDate.getDate() + Math.floor(Math.random() * 60) + 60));
+          newCrops[index].expectedHarvest = harvestDate.toISOString().split('T')[0];
+          setCrops(newCrops);
+        }, 1500);
+      }
+      
+      return newCrops;
+    });
+  }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     setFarmDetails({
       location,
@@ -165,16 +165,16 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
       description: "Farm details have been saved successfully.",
     });
     onClose();
-  };
+  }, [location, totalArea, coordinates, crops, soil, setFarmDetails, toast, onClose]);
 
-  const handleClear = () => {
+  const handleClear = useCallback(() => {
     clearFarmDetails();
     toast({
       title: "Farm Details Cleared",
       description: "All farm details have been removed from storage.",
     });
     onClose();
-  };
+  }, [clearFarmDetails, toast, onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
