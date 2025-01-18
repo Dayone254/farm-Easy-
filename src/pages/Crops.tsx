@@ -16,23 +16,64 @@ const Crops = () => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const { data: cropData, isLoading } = useQuery({
-    queryKey: ['crop-data'],
+    queryKey: ['crop-data', farmDetails?.soil],
     queryFn: async () => {
-      // Simulated API call - replace with real endpoint
+      if (!farmDetails) {
+        return {
+          moisture: 0,
+          temperature: 0,
+          ph: 0,
+          nitrogen: 0,
+          phosphorus: 0,
+          potassium: 0,
+          cropType: "Not set",
+          growthStage: "Not set",
+          healthScore: 0,
+          lastUpdated: new Date().toISOString(),
+        };
+      }
+
+      // Calculate nutrient levels based on soil type and organic matter
+      const organicMatter = parseFloat(farmDetails.soil.organicMatter) || 0;
+      const soilQualityScore = organicMatter * 20; // Convert to percentage
+
+      // Different soil types have different nutrient holding capacities
+      const soilTypeMultipliers: { [key: string]: number } = {
+        clay: 1.2,
+        loam: 1.0,
+        sandy: 0.8,
+        silt: 1.1,
+        peat: 0.9
+      };
+
+      const soilMultiplier = soilTypeMultipliers[farmDetails.soil.type] || 1.0;
+
+      // Calculate individual nutrient levels
+      const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
+      const phosphorus = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.6));
+      const potassium = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.7));
+
+      // Calculate moisture based on drainage type
+      const drainageToMoisture: { [key: string]: number } = {
+        poor: 85,
+        moderate: 65,
+        well: 45
+      };
+
       return {
-        moisture: 70,
-        temperature: 24,
-        ph: 6.8,
-        nitrogen: 65,
-        phosphorus: 45,
-        potassium: 80,
-        cropType: farmDetails?.crops[0]?.name || "Not set",
-        growthStage: "Flowering",
-        healthScore: 85,
+        moisture: drainageToMoisture[farmDetails.soil.drainage] || 60,
+        temperature: 24, // This would ideally come from a weather API
+        ph: 6.8, // This would ideally be measured directly
+        nitrogen,
+        phosphorus,
+        potassium,
+        cropType: farmDetails.crops[0]?.name || "Not set",
+        growthStage: "Active Growth",
+        healthScore: Math.round((nitrogen + phosphorus + potassium) / 3),
         lastUpdated: new Date().toISOString(),
       };
     },
-    refetchInterval: 30000 // Refetch every 30 seconds
+    enabled: !!farmDetails,
   });
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,12 +114,12 @@ const Crops = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SoilAnalysis data={cropData} />
-        <CropMetrics data={cropData} />
+        {cropData && <SoilAnalysis data={cropData} />}
+        {cropData && <CropMetrics data={cropData} />}
       </div>
       
       <div className="mt-8">
-        <SoilHealthChart data={cropData} />
+        {cropData && <SoilHealthChart data={cropData} />}
       </div>
 
       <div className="mt-8">
