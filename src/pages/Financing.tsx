@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import LoanCalculator from "@/components/LoanCalculator";
+import DocumentUpload from "@/components/DocumentUpload";
 
 const Financing = () => {
   // In a real app, this would come from the user's sales data
@@ -10,8 +11,9 @@ const Financing = () => {
       <h1 className="text-3xl font-bold text-[#2F5233] mb-6">Financing Options</h1>
       
       <div className="grid md:grid-cols-2 gap-6">
-        <div>
+        <div className="space-y-6">
           <LoanCalculator averageMonthlySales={averageMonthlySales} />
+          <DocumentUpload />
         </div>
         
         <div className="space-y-6">
