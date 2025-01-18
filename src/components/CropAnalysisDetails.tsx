@@ -53,7 +53,7 @@ const CropAnalysisDetails = () => {
                 <Ruler className="w-4 h-4 text-primary" />
                 <span className="text-sm text-gray-600">Total Area</span>
               </div>
-              <p className="font-medium">{farmDetails.totalArea} hectares</p>
+              <p className="font-medium">{farmDetails.totalArea} acres</p>
             </div>
             <div>
               <div className="flex items-center gap-2">

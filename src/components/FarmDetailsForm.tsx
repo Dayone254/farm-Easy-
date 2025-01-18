@@ -223,7 +223,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="totalArea">Total Area (hectares)</Label>
+              <Label htmlFor="totalArea">Total Area (acres)</Label>
               <Input
                 id="totalArea"
                 type="number"
@@ -416,7 +416,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Area (hectares)</Label>
+                    <Label>Area (acres)</Label>
                     <Input
                       type="number"
                       value={crop.area}
