@@ -6,14 +6,16 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { UserCheck, ShieldCheck } from "lucide-react";
+import { UserCheck, ShieldCheck, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
   const { userProfile, updateProfile } = useUser();
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [verificationDocument, setVerificationDocument] = useState<File | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,13 +58,11 @@ const Profile = () => {
       return;
     }
 
-    // Simulating verification request submission
     toast({
       title: "Verification Requested",
       description: "Your verification request has been submitted for review.",
     });
 
-    // In a real application, you would send this to your backend
     console.log("Verification document submitted:", verificationDocument.name);
   };
 
@@ -71,6 +71,15 @@ const Profile = () => {
     if (file) {
       setVerificationDocument(file);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("userProfile");
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    navigate("/login");
   };
 
   return (
@@ -199,6 +208,18 @@ const Profile = () => {
             </form>
           )}
         </div>
+      </div>
+
+      {/* Logout Button */}
+      <div className="mt-8 border-t pt-8">
+        <Button 
+          variant="destructive" 
+          className="w-full"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
       </div>
     </div>
   );
