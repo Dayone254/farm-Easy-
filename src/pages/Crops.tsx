@@ -19,7 +19,7 @@ const Crops = () => {
     queryKey: ['crop-data', farmDetails?.soil],
     queryFn: async () => {
       // Return default values if no farm details exist
-      if (!farmDetails || !farmDetails.soil) {
+      if (!farmDetails?.soil) {
         return {
           moisture: 0,
           temperature: 0,
@@ -47,7 +47,9 @@ const Crops = () => {
         peat: 0.9
       };
 
-      const soilMultiplier = farmDetails.soil.type ? soilTypeMultipliers[farmDetails.soil.type] || 1.0 : 1.0;
+      const soilMultiplier = farmDetails.soil.type ? 
+        soilTypeMultipliers[farmDetails.soil.type.toLowerCase()] || 1.0 : 
+        1.0;
 
       // Calculate individual nutrient levels
       const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
@@ -62,7 +64,7 @@ const Crops = () => {
       };
 
       const moisture = farmDetails.soil.drainage ? 
-        drainageToMoisture[farmDetails.soil.drainage] || 60 : 
+        drainageToMoisture[farmDetails.soil.drainage.toLowerCase()] || 60 : 
         60;
 
       return {
