@@ -147,19 +147,13 @@ const Orders = () => {
 
   return (
     <div className="container mx-auto max-w-7xl">
-      <div className="flex justify-between items-center mb-6">
+      {/* Header section - stacks vertically on mobile */}
+      <div className="flex flex-col space-y-4 mb-6">
         <h1 className="text-3xl font-bold text-[#2F5233]">Orders & Tracking</h1>
-        <div className="flex gap-4 items-center">
-          <Button
-            onClick={downloadStatement}
-            variant="outline"
-            className="flex items-center gap-2 border-[#2F5233] text-[#2F5233] hover:bg-[#2F5233] hover:text-cream"
-          >
-            <Download className="h-4 w-4" />
-            Download Statement
-          </Button>
+        
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
           <Select value={viewType} onValueChange={(value: "buying" | "selling") => setViewType(value)}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="View Type" />
             </SelectTrigger>
             <SelectContent>
@@ -167,12 +161,25 @@ const Orders = () => {
               <SelectItem value="selling">My Sales</SelectItem>
             </SelectContent>
           </Select>
+          
+          <Button
+            onClick={downloadStatement}
+            variant="outline"
+            className="w-full sm:w-auto flex items-center gap-2 border-[#2F5233] text-[#2F5233] hover:bg-[#2F5233] hover:text-cream"
+          >
+            <Download className="h-4 w-4" />
+            Download Statement
+          </Button>
         </div>
       </div>
 
-      <FinancialSummary totalSpent={totalSpent} totalEarned={totalEarned} />
+      {/* Financial Summary - already responsive from FinancialSummary component */}
+      <div className="mb-6">
+        <FinancialSummary totalSpent={totalSpent} totalEarned={totalEarned} />
+      </div>
       
-      <Card className="p-6">
+      {/* Orders Table - handled by OrdersTable component */}
+      <Card className="p-4 sm:p-6">
         <OrdersTable 
           orders={filteredOrders}
           viewType={viewType}

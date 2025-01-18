@@ -10,7 +10,7 @@ const FinancialSummary = ({ totalSpent, totalEarned }: FinancialSummaryProps) =>
   const netBalance = totalEarned - totalSpent;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="grid grid-cols-1 gap-4">
       <Card className="p-4 flex items-center space-x-4">
         <div className="p-3 bg-red-100 rounded-full">
           <TrendingDown className="h-6 w-6 text-red-600" />
