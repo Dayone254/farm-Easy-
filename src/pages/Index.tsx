@@ -35,6 +35,10 @@ const Index = () => {
     console.log(`Order ${orderId} status changed to ${newStatus}`);
   };
 
+  const handleAddToCart = (product: any) => {
+    console.log("Add to cart functionality is only available in the Market page");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-white p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -62,7 +66,11 @@ const Index = () => {
         </div>
 
         <div className="fade-in">
-          <Marketplace products={products} setProducts={setProducts} />
+          <Marketplace 
+            products={products} 
+            setProducts={setProducts} 
+            onAddToCart={handleAddToCart}
+          />
         </div>
       </div>
     </div>
