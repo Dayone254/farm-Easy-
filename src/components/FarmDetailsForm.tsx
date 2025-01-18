@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFarmStore } from "@/stores/farmStore";
-import type { CropDetail } from "@/stores/farmStore";
+import type { CropDetail, SoilDetail } from "@/stores/farmStore";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FarmDetailsFormProps {
   onClose: () => void;
@@ -24,6 +25,16 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   const [crops, setCrops] = useState<CropDetail[]>([]);
   const [location, setLocation] = useState("");
   const [totalArea, setTotalArea] = useState("");
+  const [coordinates, setCoordinates] = useState({ latitude: "", longitude: "" });
+  const [soil, setSoil] = useState<SoilDetail>({
+    type: "",
+    texture: "",
+    organicMatter: "",
+    drainage: "",
+    elevation: "",
+    previousCrops: "",
+    irrigationSource: "",
+  });
 
   const addCrop = () => {
     setCrops([
@@ -48,12 +59,18 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
     setCrops(newCrops);
   };
 
+  const updateSoil = (field: keyof SoilDetail, value: string) => {
+    setSoil((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setFarmDetails({
       location,
       totalArea,
+      coordinates,
       crops,
+      soil,
     });
     toast({
       title: "Success",
@@ -93,6 +110,145 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                 onChange={(e) => setTotalArea(e.target.value)}
                 placeholder="Enter total area"
                 required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="latitude">Latitude</Label>
+              <Input
+                id="latitude"
+                value={coordinates.latitude}
+                onChange={(e) =>
+                  setCoordinates((prev) => ({
+                    ...prev,
+                    latitude: e.target.value,
+                  }))
+                }
+                placeholder="Enter latitude"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="longitude">Longitude</Label>
+              <Input
+                id="longitude"
+                value={coordinates.longitude}
+                onChange={(e) =>
+                  setCoordinates((prev) => ({
+                    ...prev,
+                    longitude: e.target.value,
+                  }))
+                }
+                placeholder="Enter longitude"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Soil Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Soil Type</Label>
+                <Select
+                  value={soil.type}
+                  onValueChange={(value) => updateSoil("type", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select soil type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clay">Clay</SelectItem>
+                    <SelectItem value="sandy">Sandy</SelectItem>
+                    <SelectItem value="loam">Loam</SelectItem>
+                    <SelectItem value="silt">Silt</SelectItem>
+                    <SelectItem value="peat">Peat</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Soil Texture</Label>
+                <Select
+                  value={soil.texture}
+                  onValueChange={(value) => updateSoil("texture", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select soil texture" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fine">Fine</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="coarse">Coarse</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Organic Matter Content (%)</Label>
+                <Input
+                  type="number"
+                  value={soil.organicMatter}
+                  onChange={(e) => updateSoil("organicMatter", e.target.value)}
+                  placeholder="Enter organic matter content"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Drainage</Label>
+                <Select
+                  value={soil.drainage}
+                  onValueChange={(value) => updateSoil("drainage", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select drainage type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="well">Well-drained</SelectItem>
+                    <SelectItem value="moderate">Moderately-drained</SelectItem>
+                    <SelectItem value="poor">Poorly-drained</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Elevation (meters)</Label>
+                <Input
+                  type="number"
+                  value={soil.elevation}
+                  onChange={(e) => updateSoil("elevation", e.target.value)}
+                  placeholder="Enter elevation"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Irrigation Source</Label>
+                <Select
+                  value={soil.irrigationSource}
+                  onValueChange={(value) => updateSoil("irrigationSource", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select irrigation source" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rain">Rainfed</SelectItem>
+                    <SelectItem value="well">Well</SelectItem>
+                    <SelectItem value="canal">Canal</SelectItem>
+                    <SelectItem value="river">River</SelectItem>
+                    <SelectItem value="pond">Pond</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Previous Crops</Label>
+              <Textarea
+                value={soil.previousCrops}
+                onChange={(e) => updateSoil("previousCrops", e.target.value)}
+                placeholder="Enter previous crops grown in this soil"
               />
             </div>
           </div>
@@ -153,7 +309,9 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                     <Input
                       type="date"
                       value={crop.plantingDate}
-                      onChange={(e) => updateCrop(index, "plantingDate", e.target.value)}
+                      onChange={(e) =>
+                        updateCrop(index, "plantingDate", e.target.value)
+                      }
                     />
                   </div>
 
@@ -162,7 +320,9 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                     <Input
                       type="date"
                       value={crop.expectedHarvest}
-                      onChange={(e) => updateCrop(index, "expectedHarvest", e.target.value)}
+                      onChange={(e) =>
+                        updateCrop(index, "expectedHarvest", e.target.value)
+                      }
                     />
                   </div>
                 </div>
