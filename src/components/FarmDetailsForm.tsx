@@ -19,6 +19,31 @@ interface FarmDetailsFormProps {
   onClose: () => void;
 }
 
+const cropTypes = [
+  // Grains and Cereals
+  "wheat", "corn", "rice", "barley", "oats", "rye", "sorghum", "millet",
+  // Legumes
+  "soybeans", "peanuts", "beans", "lentils", "chickpeas", "peas",
+  // Vegetables
+  "tomatoes", "potatoes", "carrots", "onions", "cabbage", "lettuce", "spinach", 
+  "peppers", "cucumbers", "eggplant", "broccoli", "cauliflower",
+  // Fruits
+  "apples", "oranges", "bananas", "grapes", "strawberries", "blueberries",
+  "watermelon", "mango", "pineapple",
+  // Cash Crops
+  "cotton", "sugarcane", "coffee", "tea", "tobacco", "rubber",
+  // Oil Crops
+  "sunflower", "rapeseed", "palm oil", "coconut",
+  // Fiber Crops
+  "flax", "hemp", "jute",
+  // Root Crops
+  "cassava", "sweet potato", "yam", "taro",
+  // Spices
+  "ginger", "turmeric", "cardamom", "pepper",
+  // Other
+  "bamboo", "mushrooms", "flowers"
+];
+
 const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   const { toast } = useToast();
   const setFarmDetails = useFarmStore((state) => state.setFarmDetails);
@@ -35,6 +60,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
     previousCrops: "",
     irrigationSource: "",
   });
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const addCrop = () => {
     setCrops([
@@ -56,11 +82,57 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   const updateCrop = (index: number, field: keyof CropDetail, value: string) => {
     const newCrops = [...crops];
     newCrops[index] = { ...newCrops[index], [field]: value };
+    
+    // If planting date is set, simulate AI analysis for harvest date
+    if (field === "plantingDate" && value) {
+      setIsAnalyzing(true);
+      // Simulate AI analysis delay
+      setTimeout(() => {
+        const plantDate = new Date(value);
+        // Add random growing period between 60-120 days
+        const harvestDate = new Date(plantDate.setDate(plantDate.getDate() + Math.floor(Math.random() * 60) + 60));
+        newCrops[index].expectedHarvest = harvestDate.toISOString().split('T')[0];
+        setCrops(newCrops);
+        setIsAnalyzing(false);
+      }, 1500);
+    }
+    
     setCrops(newCrops);
   };
 
-  const updateSoil = (field: keyof SoilDetail, value: string) => {
-    setSoil((prev) => ({ ...prev, [field]: value }));
+  const analyzeSoil = () => {
+    if (!coordinates.latitude || !coordinates.longitude) {
+      toast({
+        title: "Location Required",
+        description: "Please enter farm coordinates for soil analysis.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+    // Simulate AI soil analysis
+    setTimeout(() => {
+      const soilTypes = ["clay", "sandy", "loam", "silt", "peat"];
+      const textures = ["fine", "medium", "coarse"];
+      const drainageTypes = ["well", "moderate", "poor"];
+      
+      setSoil({
+        type: soilTypes[Math.floor(Math.random() * soilTypes.length)],
+        texture: textures[Math.floor(Math.random() * textures.length)],
+        organicMatter: (Math.random() * 5 + 1).toFixed(1),
+        drainage: drainageTypes[Math.floor(Math.random() * drainageTypes.length)],
+        elevation: Math.floor(Math.random() * 1000 + 100).toString(),
+        previousCrops: soil.previousCrops,
+        irrigationSource: soil.irrigationSource,
+      });
+
+      setIsAnalyzing(false);
+      toast({
+        title: "Soil Analysis Complete",
+        description: "AI has analyzed your soil characteristics based on location data.",
+      });
+    }, 2000);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -148,13 +220,23 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Soil Information</h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Soil Information</h3>
+              <Button 
+                type="button" 
+                onClick={analyzeSoil}
+                disabled={isAnalyzing}
+              >
+                {isAnalyzing ? "Analyzing..." : "Analyze Soil"}
+              </Button>
+            </div>
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Soil Type</Label>
                 <Select
                   value={soil.type}
-                  onValueChange={(value) => updateSoil("type", value)}
+                  onValueChange={(value) => setSoil((prev) => ({ ...prev, type: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select soil type" />
@@ -173,7 +255,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                 <Label>Soil Texture</Label>
                 <Select
                   value={soil.texture}
-                  onValueChange={(value) => updateSoil("texture", value)}
+                  onValueChange={(value) => setSoil((prev) => ({ ...prev, texture: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select soil texture" />
@@ -191,7 +273,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                 <Input
                   type="number"
                   value={soil.organicMatter}
-                  onChange={(e) => updateSoil("organicMatter", e.target.value)}
+                  onChange={(e) => setSoil((prev) => ({ ...prev, organicMatter: e.target.value }))}
                   placeholder="Enter organic matter content"
                 />
               </div>
@@ -200,7 +282,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                 <Label>Drainage</Label>
                 <Select
                   value={soil.drainage}
-                  onValueChange={(value) => updateSoil("drainage", value)}
+                  onValueChange={(value) => setSoil((prev) => ({ ...prev, drainage: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select drainage type" />
@@ -218,7 +300,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                 <Input
                   type="number"
                   value={soil.elevation}
-                  onChange={(e) => updateSoil("elevation", e.target.value)}
+                  onChange={(e) => setSoil((prev) => ({ ...prev, elevation: e.target.value }))}
                   placeholder="Enter elevation"
                 />
               </div>
@@ -227,7 +309,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                 <Label>Irrigation Source</Label>
                 <Select
                   value={soil.irrigationSource}
-                  onValueChange={(value) => updateSoil("irrigationSource", value)}
+                  onValueChange={(value) => setSoil((prev) => ({ ...prev, irrigationSource: value }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select irrigation source" />
@@ -247,7 +329,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
               <Label>Previous Crops</Label>
               <Textarea
                 value={soil.previousCrops}
-                onChange={(e) => updateSoil("previousCrops", e.target.value)}
+                onChange={(e) => setSoil((prev) => ({ ...prev, previousCrops: e.target.value }))}
                 placeholder="Enter previous crops grown in this soil"
               />
             </div>
@@ -286,10 +368,11 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                         <SelectValue placeholder="Select crop type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="wheat">Wheat</SelectItem>
-                        <SelectItem value="corn">Corn</SelectItem>
-                        <SelectItem value="soybeans">Soybeans</SelectItem>
-                        <SelectItem value="rice">Rice</SelectItem>
+                        {cropTypes.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.charAt(0).toUpperCase() + type.slice(1)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -323,6 +406,8 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
                       onChange={(e) =>
                         updateCrop(index, "expectedHarvest", e.target.value)
                       }
+                      placeholder={isAnalyzing ? "Analyzing..." : "AI will predict"}
+                      readOnly
                     />
                   </div>
                 </div>
