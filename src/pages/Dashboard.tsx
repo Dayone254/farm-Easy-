@@ -1,87 +1,88 @@
 import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import WeatherCard from "@/components/WeatherCard";
+import CropAnalysisDetails from "@/components/CropAnalysisDetails";
 import TaskList from "@/components/TaskList";
-import AIHelper from "@/components/AIHelper";
-import { Newspaper, BookOpen, Lightbulb } from "lucide-react";
-import { useUser } from "@/contexts/UserContext";
+import FarmingAdvice from "@/components/FarmingAdvice";
+import CommunityForum from "@/components/CommunityForum";
+import MarketPrices from "@/components/MarketPrices";
+import { Book, Newspaper } from "lucide-react";
 
 const Dashboard = () => {
-  const { userProfile } = useUser();
-  
-  const news = [
-    { title: "New Sustainable Farming Methods Emerge", date: "2024-02-20" },
-    { title: "Climate Change Impact on Agriculture", date: "2024-02-19" },
-    { title: "Innovation in Crop Protection", date: "2024-02-18" },
-  ];
-
-  const practices = [
-    "Crop Rotation for Soil Health",
-    "Water Conservation Techniques",
-    "Integrated Pest Management",
-  ];
-
   return (
-    <div className="container mx-auto max-w-7xl">
-      <h1 className="text-3xl font-bold text-[#2F5233] mb-2 animate-fade-up">
-        Welcome back, {userProfile?.name || "Farmer"}!
-      </h1>
-      <p className="text-gray-600 mb-6 animate-fade-up">Here's your daily overview</p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card className="p-6 hover-scale">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Newspaper className="h-5 w-5" />
-            Latest Agricultural News
-          </h2>
-          <div className="space-y-4">
-            {news.map((item) => (
-              <div key={item.title} className="border-b pb-2">
-                <h3 className="font-medium">{item.title}</h3>
-                <p className="text-sm text-gray-500">{item.date}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-6 hover-scale">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            Educational Resources
-          </h2>
-          <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-medium mb-2">Latest Courses</h3>
-              <ul className="list-disc list-inside text-gray-600">
-                <li>Advanced Irrigation Techniques</li>
-                <li>Organic Farming Certification</li>
-                <li>Soil Management Basics</li>
-              </ul>
-            </div>
-          </div>
-        </Card>
-      </div>
-
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Top Priority Section - Critical Farm Data */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6 hover-scale">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Lightbulb className="h-5 w-5" />
-            Best Farming Practices
-          </h2>
-          <div className="space-y-4">
-            {practices.map((practice) => (
-              <div key={practice} className="p-3 bg-gray-50 rounded-lg">
-                {practice}
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-6 hover-scale">
-          <h2 className="text-xl font-semibold mb-4">Today's Tasks</h2>
-          <TaskList />
-        </Card>
+        <CropAnalysisDetails />
+        <WeatherCard />
       </div>
 
-      <AIHelper />
+      {/* Second Priority - Active Tasks and Market Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-primary">Today's Tasks</h2>
+          <TaskList />
+        </div>
+        <MarketPrices />
+      </div>
+
+      {/* Third Priority - Recommendations and Education */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-primary">Farming Insights</h2>
+        <Tabs defaultValue="advice" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="advice">Recommendations</TabsTrigger>
+            <TabsTrigger value="education">Educational Resources</TabsTrigger>
+          </TabsList>
+          <TabsContent value="advice">
+            <FarmingAdvice />
+          </TabsContent>
+          <TabsContent value="education">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Book className="w-6 h-6 text-primary" />
+                  <h3 className="text-lg font-semibold">Learning Resources</h3>
+                </div>
+                <ul className="space-y-2">
+                  <li className="p-2 bg-background/50 rounded-lg">
+                    Sustainable Farming Techniques
+                  </li>
+                  <li className="p-2 bg-background/50 rounded-lg">
+                    Crop Disease Management
+                  </li>
+                  <li className="p-2 bg-background/50 rounded-lg">
+                    Water Conservation Methods
+                  </li>
+                </ul>
+              </Card>
+              <Card className="p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Newspaper className="w-6 h-6 text-primary" />
+                  <h3 className="text-lg font-semibold">Latest News</h3>
+                </div>
+                <ul className="space-y-2">
+                  <li className="p-2 bg-background/50 rounded-lg">
+                    New Farming Policies Announced
+                  </li>
+                  <li className="p-2 bg-background/50 rounded-lg">
+                    Agricultural Technology Updates
+                  </li>
+                  <li className="p-2 bg-background/50 rounded-lg">
+                    Market Trend Analysis
+                  </li>
+                </ul>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Fourth Priority - Community Engagement */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-primary">Community Insights</h2>
+        <CommunityForum />
+      </div>
     </div>
   );
 };
