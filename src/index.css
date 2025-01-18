@@ -56,4 +56,25 @@
   .scale-up {
     @apply animate-scale-up;
   }
+
+  /* Add styles for all dropdowns and popover content */
+  [data-radix-popper-content-wrapper] > div,
+  [role="listbox"],
+  .select-content,
+  [data-state],
+  [data-side] {
+    @apply bg-white dark:bg-gray-800 !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Ensure proper z-index and background for all dropdown menus */
+  [data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
+  }
+
+  /* Style for Select component dropdown */
+  .select-content {
+    @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg !important;
+  }
 }
