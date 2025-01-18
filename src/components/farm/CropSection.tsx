@@ -11,9 +11,24 @@ import {
 } from "@/components/ui/select";
 import type { CropDetail } from "@/stores/farmStore";
 
+// Growing periods in days for different crops
+const cropGrowingPeriods: { [key: string]: { min: number; max: number } } = {
+  maize: { min: 90, max: 120 },
+  wheat: { min: 110, max: 130 },
+  rice: { min: 105, max: 150 },
+  beans: { min: 85, max: 110 },
+  potatoes: { min: 90, max: 120 },
+  tomatoes: { min: 60, max: 80 },
+  cabbage: { min: 70, max: 90 },
+  soybeans: { min: 100, max: 140 },
+  cotton: { min: 150, max: 180 },
+  sugarcane: { min: 270, max: 365 },
+  // ... Add more crops with their growing periods
+};
+
 const cropTypes = [
   // Grains and Cereals
-  "wheat", "maize", "rice", "barley", "oats", "rye", "sorghum", "millet",
+  "maize", "wheat", "rice", "barley", "oats", "rye", "sorghum", "millet",
   // Legumes
   "soybeans", "peanuts", "beans", "lentils", "chickpeas", "peas",
   // Vegetables
@@ -44,6 +59,22 @@ interface CropSectionProps {
   onUpdateCrop: (index: number, field: keyof CropDetail, value: string) => void;
 }
 
+const calculateHarvestDate = (plantingDate: string, cropType: string): string => {
+  if (!plantingDate || !cropType) return '';
+  
+  const growingPeriod = cropGrowingPeriods[cropType];
+  if (!growingPeriod) return '';
+
+  // Calculate average growing period
+  const avgDays = Math.floor((growingPeriod.min + growingPeriod.max) / 2);
+  
+  const plantDate = new Date(plantingDate);
+  const harvestDate = new Date(plantDate);
+  harvestDate.setDate(harvestDate.getDate() + avgDays);
+  
+  return harvestDate.toISOString().split('T')[0];
+};
+
 const CropSection = ({
   crops,
   isAnalyzing,
@@ -51,6 +82,22 @@ const CropSection = ({
   onRemoveCrop,
   onUpdateCrop,
 }: CropSectionProps) => {
+  const handleCropUpdate = (index: number, field: keyof CropDetail, value: string) => {
+    onUpdateCrop(index, field, value);
+    
+    // If planting date or crop type changes, update harvest date
+    if (field === "plantingDate" || field === "name") {
+      const crop = crops[index];
+      const harvestDate = calculateHarvestDate(
+        field === "plantingDate" ? value : crop.plantingDate,
+        field === "name" ? value : crop.name
+      );
+      if (harvestDate) {
+        onUpdateCrop(index, "expectedHarvest", harvestDate);
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -79,7 +126,7 @@ const CropSection = ({
               <Label>Crop Type</Label>
               <Select
                 value={crop.name}
-                onValueChange={(value) => onUpdateCrop(index, "name", value)}
+                onValueChange={(value) => handleCropUpdate(index, "name", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select crop type" />
@@ -99,7 +146,7 @@ const CropSection = ({
               <Input
                 type="number"
                 value={crop.area}
-                onChange={(e) => onUpdateCrop(index, "area", e.target.value)}
+                onChange={(e) => handleCropUpdate(index, "area", e.target.value)}
                 placeholder="Enter area"
               />
             </div>
@@ -109,9 +156,7 @@ const CropSection = ({
               <Input
                 type="date"
                 value={crop.plantingDate}
-                onChange={(e) =>
-                  onUpdateCrop(index, "plantingDate", e.target.value)
-                }
+                onChange={(e) => handleCropUpdate(index, "plantingDate", e.target.value)}
               />
             </div>
 
@@ -120,11 +165,9 @@ const CropSection = ({
               <Input
                 type="date"
                 value={crop.expectedHarvest}
-                onChange={(e) =>
-                  onUpdateCrop(index, "expectedHarvest", e.target.value)
-                }
-                placeholder={isAnalyzing ? "Analyzing..." : "AI will predict"}
                 readOnly
+                className="bg-gray-50"
+                placeholder={isAnalyzing ? "Analyzing..." : "Auto-calculated"}
               />
             </div>
           </div>
