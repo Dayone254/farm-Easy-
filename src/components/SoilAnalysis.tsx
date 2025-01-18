@@ -1,4 +1,4 @@
-import { Sprout, Droplets, Thermometer, Flask } from "lucide-react";
+import { Sprout, Droplets, Thermometer, Beaker } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface SoilData {
@@ -50,7 +50,7 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <Flask className="w-4 h-4 text-primary" />
+            <Beaker className="w-4 h-4 text-primary" />
             <span className="text-sm text-gray-600">pH Level</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">

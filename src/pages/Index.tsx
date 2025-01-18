@@ -22,8 +22,16 @@ const Index = () => {
 
   const [products, setProducts] = useState<any[]>([]);
 
+  const soilData = {
+    moisture: 70,
+    temperature: 24,
+    ph: 6.8,
+    cropType: "Wheat",
+    growthStage: "Flowering",
+    lastUpdated: new Date().toISOString()
+  };
+
   const handleStatusChange = (orderId: string, newStatus: "Pending" | "In Transit" | "Delivered" | "Cancelled" | "Payment Held" | "Payment Released") => {
-    // Handle status change logic here
     console.log(`Order ${orderId} status changed to ${newStatus}`);
   };
 
@@ -37,7 +45,7 @@ const Index = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in">
           <WeatherCard />
-          <SoilAnalysis />
+          <SoilAnalysis data={soilData} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in">
