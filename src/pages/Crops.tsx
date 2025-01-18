@@ -18,7 +18,8 @@ const Crops = () => {
   const { data: cropData, isLoading } = useQuery({
     queryKey: ['crop-data', farmDetails?.soil],
     queryFn: async () => {
-      if (!farmDetails) {
+      // Return default values if no farm details exist
+      if (!farmDetails || !farmDetails.soil) {
         return {
           moisture: 0,
           temperature: 0,
@@ -46,7 +47,7 @@ const Crops = () => {
         peat: 0.9
       };
 
-      const soilMultiplier = soilTypeMultipliers[farmDetails.soil.type] || 1.0;
+      const soilMultiplier = farmDetails.soil.type ? soilTypeMultipliers[farmDetails.soil.type] || 1.0 : 1.0;
 
       // Calculate individual nutrient levels
       const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
@@ -60,10 +61,14 @@ const Crops = () => {
         well: 45
       };
 
+      const moisture = farmDetails.soil.drainage ? 
+        drainageToMoisture[farmDetails.soil.drainage] || 60 : 
+        60;
+
       return {
-        moisture: drainageToMoisture[farmDetails.soil.drainage] || 60,
-        temperature: 24, // This would ideally come from a weather API
-        ph: 6.8, // This would ideally be measured directly
+        moisture,
+        temperature: 24,
+        ph: 6.8,
         nitrogen,
         phosphorus,
         potassium,
@@ -73,7 +78,7 @@ const Crops = () => {
         lastUpdated: new Date().toISOString(),
       };
     },
-    enabled: !!farmDetails,
+    enabled: true, // Always enable the query, we'll handle the null case inside
   });
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,6 +105,12 @@ const Crops = () => {
           {farmDetails ? 'Update Farm Details' : 'Add Farm Details'}
         </Button>
       </div>
+
+      {!farmDetails && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800">
+          Please add your farm details to see soil and crop analysis.
+        </div>
+      )}
 
       <div className="glass-card rounded-lg p-6 hover-scale mb-8">
         <h3 className="text-xl font-semibold mb-6">AI Crop Analysis</h3>
