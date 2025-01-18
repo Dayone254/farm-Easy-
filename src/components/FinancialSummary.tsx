@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { DollarSign, TrendingUp, TrendingDown } from "lucide-react";
+import { formatCurrency } from "@/utils/currency";
 
 interface FinancialSummaryProps {
   totalSpent: number;
@@ -17,7 +18,7 @@ const FinancialSummary = ({ totalSpent, totalEarned }: FinancialSummaryProps) =>
         </div>
         <div>
           <p className="text-sm text-gray-500">Total Spent</p>
-          <p className="text-xl font-bold">KSh {totalSpent.toLocaleString()}</p>
+          <p className="text-xl font-bold">{formatCurrency(totalSpent)}</p>
         </div>
       </Card>
 
@@ -27,7 +28,7 @@ const FinancialSummary = ({ totalSpent, totalEarned }: FinancialSummaryProps) =>
         </div>
         <div>
           <p className="text-sm text-gray-500">Total Earned</p>
-          <p className="text-xl font-bold">KSh {totalEarned.toLocaleString()}</p>
+          <p className="text-xl font-bold">{formatCurrency(totalEarned)}</p>
         </div>
       </Card>
 
@@ -38,7 +39,7 @@ const FinancialSummary = ({ totalSpent, totalEarned }: FinancialSummaryProps) =>
         <div>
           <p className="text-sm text-gray-500">Net Balance</p>
           <p className={`text-xl font-bold ${netBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            KSh {Math.abs(netBalance).toLocaleString()}
+            {formatCurrency(Math.abs(netBalance))}
           </p>
         </div>
       </Card>

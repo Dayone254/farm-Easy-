@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
+import { formatCurrency } from "@/utils/currency";
 
 interface ProductCardProps {
   product: any;
@@ -68,7 +69,7 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
         <div className="flex items-center justify-between">
           <h4 className="font-semibold text-lg">{product.name}</h4>
           <span className="font-bold text-lg text-primary">
-            KSh {product.price.toLocaleString()}
+            {formatCurrency(product.price)}
           </span>
         </div>
 

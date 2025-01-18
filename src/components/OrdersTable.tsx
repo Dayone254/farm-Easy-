@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Check, X, Clock, Truck, DollarSign, Shield } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { formatCurrency } from "@/utils/currency";
 
 interface Order {
   id: string;
@@ -88,7 +89,7 @@ const OrdersTable = ({ orders, viewType, onStatusChange }: OrdersTableProps) => 
                     {order.paymentStatus}
                   </span>
                 </td>
-                <td className="py-4">KSh {order.price.toLocaleString()}</td>
+                <td className="py-4">{formatCurrency(order.price)}</td>
                 <td className="py-4">{order.location}</td>
                 <td className="py-4">
                   <div className="flex gap-2">
@@ -162,7 +163,7 @@ const OrdersTable = ({ orders, viewType, onStatusChange }: OrdersTableProps) => 
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Price:</span>
-                <span className="text-sm">KSh {order.price.toLocaleString()}</span>
+                <span className="text-sm">{formatCurrency(order.price)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Location:</span>

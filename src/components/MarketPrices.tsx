@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { formatCurrency } from "../utils/currency";
 
 const MarketPrices = () => {
   const prices = [
@@ -16,7 +17,7 @@ const MarketPrices = () => {
           <div key={item.crop} className="flex items-center justify-between p-3 bg-white bg-opacity-50 rounded-md">
             <span className="font-medium">{item.crop}</span>
             <div className="flex items-center gap-2">
-              <span className="font-semibold">${item.price}</span>
+              <span className="font-semibold">{formatCurrency(item.price)}</span>
               {item.trend === "up" ? (
                 <TrendingUp className="w-4 h-4 text-success" />
               ) : (
