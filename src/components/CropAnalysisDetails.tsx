@@ -1,25 +1,10 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Ruler, Map, Wheat, AlertCircle } from "lucide-react";
+import { useFarmStore } from "@/stores/farmStore";
 
-interface CropDetailsData {
-  cropTypes: Array<{
-    name: string;
-    area: number;
-    plantingDate: string;
-    expectedHarvest: string;
-    status: "Healthy" | "Needs Attention" | "Critical";
-  }>;
-  totalArea: number;
-  location: string;
-  recommendations: Array<{
-    id: string;
-    priority: "High" | "Medium" | "Low";
-    action: string;
-    dueDate: string;
-  }>;
-}
+const CropAnalysisDetails = () => {
+  const farmDetails = useFarmStore((state) => state.farmDetails);
 
-const CropAnalysisDetails = ({ data }: { data: CropDetailsData }) => {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "High":
@@ -46,6 +31,14 @@ const CropAnalysisDetails = ({ data }: { data: CropDetailsData }) => {
     }
   };
 
+  if (!farmDetails) {
+    return (
+      <div className="text-center p-8 bg-gray-50 rounded-lg">
+        <p className="text-gray-600">No farm details available. Please add your farm details first.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card className="hover:shadow-lg transition-shadow">
@@ -60,14 +53,14 @@ const CropAnalysisDetails = ({ data }: { data: CropDetailsData }) => {
                 <Ruler className="w-4 h-4 text-primary" />
                 <span className="text-sm text-gray-600">Total Area</span>
               </div>
-              <p className="font-medium">{data.totalArea} hectares</p>
+              <p className="font-medium">{farmDetails.totalArea} hectares</p>
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <Map className="w-4 h-4 text-primary" />
                 <span className="text-sm text-gray-600">Location</span>
               </div>
-              <p className="font-medium">{data.location}</p>
+              <p className="font-medium">{farmDetails.location}</p>
             </div>
           </div>
         </CardContent>
@@ -80,7 +73,7 @@ const CropAnalysisDetails = ({ data }: { data: CropDetailsData }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.cropTypes.map((crop, index) => (
+            {farmDetails.crops.map((crop, index) => (
               <div key={index} className="border-b last:border-0 pb-4 last:pb-0">
                 <div className="flex justify-between items-start mb-2">
                   <div>
@@ -114,18 +107,18 @@ const CropAnalysisDetails = ({ data }: { data: CropDetailsData }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {data.recommendations.map((rec) => (
-              <div key={rec.id} className="flex items-start gap-4 border-b last:border-0 pb-4 last:pb-0">
-                <div className={`w-2 h-2 rounded-full mt-2 ${getPriorityColor(rec.priority)}`} />
+            {farmDetails.crops.map((crop, index) => (
+              <div key={index} className="flex items-start gap-4 border-b last:border-0 pb-4 last:pb-0">
+                <div className={`w-2 h-2 rounded-full mt-2 ${getPriorityColor("Medium")}`} />
                 <div className="flex-1">
                   <div className="flex justify-between items-start">
-                    <p className="font-medium">{rec.action}</p>
-                    <span className={`text-sm font-medium ${getPriorityColor(rec.priority)}`}>
-                      {rec.priority} Priority
+                    <p className="font-medium">Monitor {crop.name} growth progress</p>
+                    <span className={`text-sm font-medium ${getPriorityColor("Medium")}`}>
+                      Medium Priority
                     </span>
                   </div>
                   <p className="text-sm text-gray-600">
-                    Due by: {new Date(rec.dueDate).toLocaleDateString()}
+                    Due by: {new Date(crop.expectedHarvest).toLocaleDateString()}
                   </p>
                 </div>
               </div>

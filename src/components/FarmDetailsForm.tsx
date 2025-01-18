@@ -11,20 +11,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFarmStore } from "@/stores/farmStore";
+import type { CropDetail } from "@/stores/farmStore";
 
 interface FarmDetailsFormProps {
   onClose: () => void;
 }
 
-interface CropDetail {
-  name: string;
-  area: string;
-  plantingDate: string;
-  expectedHarvest: string;
-}
-
 const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   const { toast } = useToast();
+  const setFarmDetails = useFarmStore((state) => state.setFarmDetails);
   const [crops, setCrops] = useState<CropDetail[]>([]);
   const [location, setLocation] = useState("");
   const [totalArea, setTotalArea] = useState("");
@@ -37,6 +33,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
         area: "",
         plantingDate: "",
         expectedHarvest: "",
+        status: "Healthy",
       },
     ]);
   };
@@ -53,7 +50,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting farm details:", {
+    setFarmDetails({
       location,
       totalArea,
       crops,

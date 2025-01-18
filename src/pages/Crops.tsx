@@ -8,16 +8,17 @@ import { Upload, Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import FarmDetailsForm from "../components/FarmDetailsForm";
+import { useFarmStore } from "@/stores/farmStore";
 
 const Crops = () => {
   const { toast } = useToast();
   const [showFarmForm, setShowFarmForm] = useState(false);
+  const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const { data: cropData, isLoading } = useQuery({
     queryKey: ['crop-data'],
     queryFn: async () => {
       // Simulated API call - replace with real endpoint
-      console.log("Fetching crop data...");
       return {
         moisture: 70,
         temperature: 24,
@@ -25,55 +26,10 @@ const Crops = () => {
         nitrogen: 65,
         phosphorus: 45,
         potassium: 80,
-        cropType: "Wheat",
+        cropType: farmDetails?.crops[0]?.name || "Not set",
         growthStage: "Flowering",
         healthScore: 85,
         lastUpdated: new Date().toISOString(),
-        cropTypes: [
-          {
-            name: "Wheat",
-            area: 150,
-            plantingDate: "2024-02-15",
-            expectedHarvest: "2024-07-15",
-            status: "Healthy" as const
-          },
-          {
-            name: "Corn",
-            area: 100,
-            plantingDate: "2024-03-01",
-            expectedHarvest: "2024-08-15",
-            status: "Needs Attention" as const
-          },
-          {
-            name: "Soybeans",
-            area: 75,
-            plantingDate: "2024-03-15",
-            expectedHarvest: "2024-09-01",
-            status: "Healthy" as const
-          }
-        ],
-        totalArea: 325,
-        location: "Central Valley, CA",
-        recommendations: [
-          {
-            id: "1",
-            priority: "High" as const,
-            action: "Apply nitrogen fertilizer to corn fields",
-            dueDate: "2024-03-20"
-          },
-          {
-            id: "2",
-            priority: "Medium" as const,
-            action: "Schedule irrigation maintenance",
-            dueDate: "2024-03-25"
-          },
-          {
-            id: "3",
-            priority: "Low" as const,
-            action: "Plan crop rotation for next season",
-            dueDate: "2024-04-01"
-          }
-        ]
       };
     },
     refetchInterval: 30000 // Refetch every 30 seconds
@@ -100,7 +56,7 @@ const Crops = () => {
         <h1 className="text-3xl font-bold text-primary">Soil & Crops Analysis</h1>
         <Button onClick={() => setShowFarmForm(true)} className="flex items-center gap-2">
           <Plus className="w-4 h-4" />
-          Add Farm Details
+          {farmDetails ? 'Update Farm Details' : 'Add Farm Details'}
         </Button>
       </div>
 
@@ -126,7 +82,7 @@ const Crops = () => {
       </div>
 
       <div className="mt-8">
-        <CropAnalysisDetails data={cropData} />
+        <CropAnalysisDetails />
       </div>
 
       {showFarmForm && <FarmDetailsForm onClose={() => setShowFarmForm(false)} />}
