@@ -37,7 +37,20 @@ const Market = () => {
   }, [products]);
 
   const handleAddProduct = (newProduct: any) => {
-    setProducts(prevProducts => [newProduct, ...prevProducts]);
+    // Add seller information to the product
+    const productWithSeller = {
+      ...newProduct,
+      seller: {
+        id: userProfile?.id || '',
+        name: userProfile?.name || '',
+        location: userProfile?.location || '',
+        isVerified: userProfile?.isVerified || false,
+        profileImage: userProfile?.profileImage || null,
+        previousSales: []
+      }
+    };
+    
+    setProducts(prevProducts => [productWithSeller, ...prevProducts]);
     setIsListingFormOpen(false);
     toast({
       description: "Product listed successfully",
