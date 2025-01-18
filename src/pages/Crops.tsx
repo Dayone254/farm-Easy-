@@ -1,10 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import SoilAnalysis from "../components/SoilAnalysis";
+import CropMetrics from "../components/CropMetrics";
+import SoilHealthChart from "../components/SoilHealthChart";
+import CropAnalysisDetails from "../components/CropAnalysisDetails";
 import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import CropMetrics from "../components/CropMetrics";
-import SoilHealthChart from "../components/SoilHealthChart";
 
 const Crops = () => {
   const { toast } = useToast();
@@ -24,7 +25,52 @@ const Crops = () => {
         cropType: "Wheat",
         growthStage: "Flowering",
         healthScore: 85,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
+        cropTypes: [
+          {
+            name: "Wheat",
+            area: 150,
+            plantingDate: "2024-02-15",
+            expectedHarvest: "2024-07-15",
+            status: "Healthy"
+          },
+          {
+            name: "Corn",
+            area: 100,
+            plantingDate: "2024-03-01",
+            expectedHarvest: "2024-08-15",
+            status: "Needs Attention"
+          },
+          {
+            name: "Soybeans",
+            area: 75,
+            plantingDate: "2024-03-15",
+            expectedHarvest: "2024-09-01",
+            status: "Healthy"
+          }
+        ],
+        totalArea: 325,
+        location: "Central Valley, CA",
+        recommendations: [
+          {
+            id: "1",
+            priority: "High",
+            action: "Apply nitrogen fertilizer to corn fields",
+            dueDate: "2024-03-20"
+          },
+          {
+            id: "2",
+            priority: "Medium",
+            action: "Schedule irrigation maintenance",
+            dueDate: "2024-03-25"
+          },
+          {
+            id: "3",
+            priority: "Low",
+            action: "Plan crop rotation for next season",
+            dueDate: "2024-04-01"
+          }
+        ]
       };
     },
     refetchInterval: 30000 // Refetch every 30 seconds
@@ -56,6 +102,10 @@ const Crops = () => {
       
       <div className="mt-8">
         <SoilHealthChart data={cropData} />
+      </div>
+
+      <div className="mt-8">
+        <CropAnalysisDetails data={cropData} />
       </div>
       
       <div className="glass-card rounded-lg p-6 hover-scale mt-8">
