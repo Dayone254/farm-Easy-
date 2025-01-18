@@ -45,6 +45,31 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick, onAddToCa
     });
   };
 
+  const handleAddToCart = () => {
+    if (!userProfile) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to add items to cart.",
+      });
+      return;
+    }
+
+    if (userProfile.id === product.seller.id) {
+      toast({
+        variant: "destructive",
+        title: "Cannot add to cart",
+        description: "You cannot add your own products to the cart",
+      });
+      return;
+    }
+
+    onAddToCart(product);
+    toast({
+      description: "Product added to cart successfully",
+    });
+  };
+
   const isOwner = userProfile?.id === product.seller.id;
 
   return (
@@ -118,6 +143,7 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick, onAddToCa
           ) : (
             <div className="flex gap-2">
               <Button 
+                variant="outline"
                 className="flex-1"
                 onClick={handleContactSeller}
               >
@@ -126,7 +152,7 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick, onAddToCa
               </Button>
               <Button
                 className="flex-1"
-                onClick={() => onAddToCart(product)}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Add to Cart
