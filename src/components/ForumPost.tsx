@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ForumPost as ForumPostType, Comment } from "../types/forum";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Collapsible,
   CollapsibleContent,
