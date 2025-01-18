@@ -3,7 +3,7 @@ import { MessageSquare } from "lucide-react";
 import { ForumPost as ForumPostType } from "../types/forum";
 import ForumPost from "./ForumPost";
 import CreatePostDialog from "./CreatePostDialog";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const STORAGE_KEY = "forum_posts";
 
@@ -33,6 +33,10 @@ const CommunityForum = () => {
       comments: [],
     };
     savePosts([newPost, ...posts]);
+    toast({
+      title: "Success",
+      description: "Your post has been created successfully!",
+    });
   };
 
   const handleAddComment = (postId: string, content: string) => {
