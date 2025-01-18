@@ -89,7 +89,10 @@ const SoilSection = ({
           <Select
             value={soil.irrigationSource}
             onValueChange={(value) =>
-              setSoil((prev) => ({ ...prev, irrigationSource: value }))
+              setSoil({
+                ...soil,
+                irrigationSource: value,
+              })
             }
           >
             <SelectTrigger>
@@ -111,7 +114,10 @@ const SoilSection = ({
         <Textarea
           value={soil.previousCrops}
           onChange={(e) =>
-            setSoil((prev) => ({ ...prev, previousCrops: e.target.value }))
+            setSoil({
+              ...soil,
+              previousCrops: e.target.value,
+            })
           }
           placeholder="Enter previous crops grown in this soil"
         />

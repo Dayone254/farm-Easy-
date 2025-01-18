@@ -1,15 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+
+interface Coordinates {
+  latitude: string;
+  longitude: string;
+}
 
 interface LocationSectionProps {
   location: string;
   setLocation: (value: string) => void;
   totalArea: string;
   setTotalArea: (value: string) => void;
-  coordinates: { latitude: string; longitude: string };
-  setCoordinates: (coords: { latitude: string; longitude: string }) => void;
+  coordinates: Coordinates;
+  setCoordinates: (coords: Coordinates) => void;
   onGetLocation: () => void;
 }
 
@@ -62,10 +66,10 @@ const LocationSection = ({
               id="latitude"
               value={coordinates.latitude}
               onChange={(e) =>
-                setCoordinates((prev) => ({
-                  ...prev,
+                setCoordinates({
+                  ...coordinates,
                   latitude: e.target.value,
-                }))
+                })
               }
               placeholder="Enter latitude"
               required
@@ -77,10 +81,10 @@ const LocationSection = ({
               id="longitude"
               value={coordinates.longitude}
               onChange={(e) =>
-                setCoordinates((prev) => ({
-                  ...prev,
+                setCoordinates({
+                  ...coordinates,
                   longitude: e.target.value,
-                }))
+                })
               }
               placeholder="Enter longitude"
               required
