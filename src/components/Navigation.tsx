@@ -1,21 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu, Calculator, UserCheck, MessageSquare } from "lucide-react";
+import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu, Calculator, UserCheck, MessageSquare, BellDot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/UserContext";
 
 const Navigation = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { userProfile } = useUser();
+  const [notifications, setNotifications] = useState({
+    messages: 0,
+    orders: 0
+  });
+
+  // Simulate fetching notifications (replace with actual API calls)
+  useEffect(() => {
+    // This is a mock implementation. Replace with actual API calls
+    const mockNotifications = {
+      messages: 3, // Example number of unread messages
+      orders: 2    // Example number of pending orders
+    };
+    setNotifications(mockNotifications);
+  }, []);
 
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/", showFor: ["farmer", "vendor"] },
     { icon: CloudSun, label: "Weather", path: "/weather", showFor: ["farmer"] },
     { icon: Sprout, label: "Crops", path: "/crops", showFor: ["farmer"] },
     { icon: DollarSign, label: "Market", path: "/market", showFor: ["farmer", "vendor"] },
-    { icon: Package, label: "Orders", path: "/orders", showFor: ["farmer", "vendor"] },
+    { 
+      icon: Package, 
+      label: "Orders", 
+      path: "/orders", 
+      showFor: ["farmer", "vendor"],
+      notifications: notifications.orders 
+    },
     { icon: Calculator, label: "Financing", path: "/financing", showFor: ["farmer", "vendor"] },
-    { icon: MessageSquare, label: "Messages", path: "/messages", showFor: ["farmer", "vendor"] },
+    { 
+      icon: MessageSquare, 
+      label: "Messages", 
+      path: "/messages", 
+      showFor: ["farmer", "vendor"],
+      notifications: notifications.messages
+    },
     { icon: UserCheck, label: "Profile", path: "/profile", showFor: ["farmer", "vendor"] },
   ];
 
@@ -46,10 +72,15 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className="flex items-center gap-2 p-2 text-cream hover:bg-[#1F371F] rounded-lg transition-colors"
+                className="flex items-center gap-2 p-2 text-cream hover:bg-[#1F371F] rounded-lg transition-colors relative"
               >
                 <item.icon size={20} />
                 <span>{item.label}</span>
+                {item.notifications && item.notifications > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {item.notifications}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -62,11 +93,16 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className="flex items-center gap-2 p-3 text-cream hover:bg-[#1F371F] rounded-lg transition-colors"
+                className="flex items-center gap-2 p-3 text-cream hover:bg-[#1F371F] rounded-lg transition-colors relative"
                 onClick={() => setIsExpanded(false)}
               >
                 <item.icon size={20} />
                 <span>{item.label}</span>
+                {item.notifications && item.notifications > 0 && (
+                  <span className="absolute top-2 right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {item.notifications}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
