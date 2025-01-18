@@ -18,8 +18,8 @@ const Crops = () => {
   const { data: cropData, isLoading } = useQuery({
     queryKey: ['crop-data', farmDetails?.soil],
     queryFn: async () => {
-      // Return default values if no farm details exist
-      if (!farmDetails?.soil) {
+      // Return default values if no farm details or soil data exist
+      if (!farmDetails?.soil?.type || !farmDetails?.soil?.drainage) {
         return {
           moisture: 0,
           temperature: 0,
@@ -47,9 +47,8 @@ const Crops = () => {
         peat: 0.9
       };
 
-      const soilMultiplier = farmDetails.soil.type ? 
-        soilTypeMultipliers[farmDetails.soil.type.toLowerCase()] || 1.0 : 
-        1.0;
+      const soilType = farmDetails.soil.type.toLowerCase();
+      const soilMultiplier = soilTypeMultipliers[soilType] || 1.0;
 
       // Calculate individual nutrient levels
       const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
@@ -63,9 +62,8 @@ const Crops = () => {
         well: 45
       };
 
-      const moisture = farmDetails.soil.drainage ? 
-        drainageToMoisture[farmDetails.soil.drainage.toLowerCase()] || 60 : 
-        60;
+      const drainage = farmDetails.soil.drainage.toLowerCase();
+      const moisture = drainageToMoisture[drainage] || 60;
 
       return {
         moisture,
@@ -80,7 +78,7 @@ const Crops = () => {
         lastUpdated: new Date().toISOString(),
       };
     },
-    enabled: true, // Always enable the query, we'll handle the null case inside
+    enabled: true,
   });
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
