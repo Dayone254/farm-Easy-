@@ -1,26 +1,60 @@
-import { MessageSquare, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { MessageSquare } from "lucide-react";
+import { ForumPost as ForumPostType } from "../types/forum";
+import ForumPost from "./ForumPost";
+import CreatePostDialog from "./CreatePostDialog";
+import { useToast } from "./ui/use-toast";
+
+const STORAGE_KEY = "forum_posts";
 
 const CommunityForum = () => {
-  const discussions = [
-    {
-      title: "Best practices for wheat irrigation",
-      author: "John Doe",
-      replies: 12,
-      time: "2h ago",
-    },
-    {
-      title: "Organic pest control methods",
-      author: "Jane Smith",
-      replies: 8,
-      time: "4h ago",
-    },
-    {
-      title: "Weather impact on crop yield",
-      author: "Mike Johnson",
-      replies: 15,
-      time: "6h ago",
-    },
-  ];
+  const [posts, setPosts] = useState<ForumPostType[]>([]);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const savedPosts = localStorage.getItem(STORAGE_KEY);
+    if (savedPosts) {
+      setPosts(JSON.parse(savedPosts));
+    }
+  }, []);
+
+  const savePosts = (newPosts: ForumPostType[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newPosts));
+    setPosts(newPosts);
+  };
+
+  const handleCreatePost = (title: string, content: string) => {
+    const newPost: ForumPostType = {
+      id: Date.now().toString(),
+      title,
+      content,
+      author: "Current User", // In a real app, this would come from auth
+      createdAt: new Date().toISOString(),
+      comments: [],
+    };
+    savePosts([newPost, ...posts]);
+  };
+
+  const handleAddComment = (postId: string, content: string) => {
+    const updatedPosts = posts.map((post) => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          comments: [
+            ...post.comments,
+            {
+              id: Date.now().toString(),
+              content,
+              author: "Current User", // In a real app, this would come from auth
+              createdAt: new Date().toISOString(),
+            },
+          ],
+        };
+      }
+      return post;
+    });
+    savePosts(updatedPosts);
+  };
 
   return (
     <div className="glass-card rounded-lg p-6 hover-scale">
@@ -28,22 +62,22 @@ const CommunityForum = () => {
         <h3 className="text-xl font-semibold">Community Forum</h3>
         <MessageSquare className="w-8 h-8 text-accent" />
       </div>
+
+      <CreatePostDialog onPostCreated={handleCreatePost} />
+
       <div className="space-y-4">
-        {discussions.map((discussion) => (
-          <div key={discussion.title} className="p-4 bg-white bg-opacity-50 rounded-md space-y-2">
-            <h4 className="font-medium">{discussion.title}</h4>
-            <div className="flex items-center justify-between text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                <span>{discussion.author}</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span>{discussion.replies} replies</span>
-                <span>{discussion.time}</span>
-              </div>
-            </div>
-          </div>
+        {posts.map((post) => (
+          <ForumPost
+            key={post.id}
+            post={post}
+            onAddComment={handleAddComment}
+          />
         ))}
+        {posts.length === 0 && (
+          <p className="text-center text-gray-500">
+            No posts yet. Be the first to share something!
+          </p>
+        )}
       </div>
     </div>
   );
