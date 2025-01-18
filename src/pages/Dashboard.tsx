@@ -1,14 +1,83 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import WeatherCard from "@/components/WeatherCard";
 import CropAnalysisDetails from "@/components/CropAnalysisDetails";
 import TaskList from "@/components/TaskList";
 import FarmingAdvice from "@/components/FarmingAdvice";
 import CommunityForum from "@/components/CommunityForum";
 import MarketPrices from "@/components/MarketPrices";
 import { Book, Newspaper } from "lucide-react";
+import { useUser } from "@/contexts/UserContext";
+import WeatherCard from "@/components/WeatherCard";
 
 const Dashboard = () => {
+  const { userProfile } = useUser();
+  const isVendor = userProfile?.userType === 'vendor';
+
+  if (isVendor) {
+    return (
+      <div className="container mx-auto py-6 space-y-6">
+        {/* Market Prices Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <MarketPrices />
+          <Card className="p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Book className="w-6 h-6 text-primary" />
+              <h3 className="text-lg font-semibold">Vendor Resources</h3>
+            </div>
+            <ul className="space-y-2">
+              <li className="p-2 bg-background/50 rounded-lg">
+                Market Analysis & Trends
+              </li>
+              <li className="p-2 bg-background/50 rounded-lg">
+                Supply Chain Management Guide
+              </li>
+              <li className="p-2 bg-background/50 rounded-lg">
+                Agricultural Product Standards
+              </li>
+              <li className="p-2 bg-background/50 rounded-lg">
+                Storage Best Practices
+              </li>
+            </ul>
+          </Card>
+        </div>
+
+        {/* Latest News Section */}
+        <Card className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Newspaper className="w-6 h-6 text-primary" />
+            <h3 className="text-lg font-semibold">Latest Industry News</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 bg-background/50 rounded-lg">
+              <h4 className="font-medium">New Agricultural Trade Policies</h4>
+              <p className="text-sm text-muted-foreground">
+                Recent updates to agricultural trade regulations and their impact on market dynamics.
+              </p>
+            </div>
+            <div className="p-4 bg-background/50 rounded-lg">
+              <h4 className="font-medium">Sustainable Agriculture Trends</h4>
+              <p className="text-sm text-muted-foreground">
+                Growing demand for sustainably sourced agricultural products and certification requirements.
+              </p>
+            </div>
+            <div className="p-4 bg-background/50 rounded-lg">
+              <h4 className="font-medium">Technology in Agriculture</h4>
+              <p className="text-sm text-muted-foreground">
+                Latest technological innovations in farming and their impact on product quality.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Community Forum Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-primary">Community Insights</h2>
+          <CommunityForum />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-6 space-y-6">
       {/* Top Priority Section - Critical Farm Data */}
@@ -17,7 +86,6 @@ const Dashboard = () => {
         <WeatherCard />
       </div>
 
-      {/* Second Priority - Active Tasks and Market Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <h2 className="text-2xl font-bold text-primary">Today's Tasks</h2>
@@ -26,7 +94,6 @@ const Dashboard = () => {
         <MarketPrices />
       </div>
 
-      {/* Third Priority - Recommendations and Education */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-primary">Farming Insights</h2>
         <Tabs defaultValue="advice" className="w-full">
@@ -78,7 +145,6 @@ const Dashboard = () => {
         </Tabs>
       </div>
 
-      {/* Fourth Priority - Community Engagement */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-primary">Community Insights</h2>
         <CommunityForum />
