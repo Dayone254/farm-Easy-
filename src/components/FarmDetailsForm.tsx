@@ -62,6 +62,90 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   });
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  const getUserLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoordinates({
+            latitude: position.coords.latitude.toString(),
+            longitude: position.coords.longitude.toString(),
+          });
+          toast({
+            title: "Location Retrieved",
+            description: "Your coordinates have been automatically filled.",
+          });
+          // Trigger soil analysis after getting coordinates
+          analyzeSoil(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          toast({
+            title: "Location Error",
+            description: "Unable to get your location. Please enter coordinates manually.",
+            variant: "destructive",
+          });
+        }
+      );
+    } else {
+      toast({
+        title: "Geolocation Not Supported",
+        description: "Your browser doesn't support location services.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const analyzeSoil = async (lat?: number, long?: number) => {
+    const latitude = lat || parseFloat(coordinates.latitude);
+    const longitude = long || parseFloat(coordinates.longitude);
+
+    if (!latitude || !longitude) {
+      toast({
+        title: "Location Required",
+        description: "Please enter farm coordinates or use auto-detect for soil analysis.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsAnalyzing(true);
+    
+    try {
+      // Simulate API call to get elevation data
+      // In a real implementation, you would use an elevation API service
+      const elevationResponse = await new Promise(resolve => 
+        setTimeout(() => resolve(Math.floor(Math.random() * 1000 + 100)), 1000)
+      );
+
+      // Simulate soil analysis based on location
+      // In a real implementation, you would use a soil data API or ML model
+      const soilTypes = ["clay", "sandy", "loam", "silt", "peat"];
+      const textures = ["fine", "medium", "coarse"];
+      const drainageTypes = ["well", "moderate", "poor"];
+      
+      setSoil(prev => ({
+        ...prev,
+        type: soilTypes[Math.floor(Math.random() * soilTypes.length)],
+        texture: textures[Math.floor(Math.random() * textures.length)],
+        organicMatter: (Math.random() * 5 + 1).toFixed(1),
+        drainage: drainageTypes[Math.floor(Math.random() * drainageTypes.length)],
+        elevation: elevationResponse.toString(),
+      }));
+
+      toast({
+        title: "Soil Analysis Complete",
+        description: "AI has analyzed your soil characteristics based on location data.",
+      });
+    } catch (error) {
+      toast({
+        title: "Analysis Failed",
+        description: "Unable to analyze soil data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const addCrop = () => {
     setCrops([
       ...crops,
@@ -98,41 +182,6 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
     }
     
     setCrops(newCrops);
-  };
-
-  const analyzeSoil = () => {
-    if (!coordinates.latitude || !coordinates.longitude) {
-      toast({
-        title: "Location Required",
-        description: "Please enter farm coordinates for soil analysis.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsAnalyzing(true);
-    // Simulate AI soil analysis
-    setTimeout(() => {
-      const soilTypes = ["clay", "sandy", "loam", "silt", "peat"];
-      const textures = ["fine", "medium", "coarse"];
-      const drainageTypes = ["well", "moderate", "poor"];
-      
-      setSoil({
-        type: soilTypes[Math.floor(Math.random() * soilTypes.length)],
-        texture: textures[Math.floor(Math.random() * textures.length)],
-        organicMatter: (Math.random() * 5 + 1).toFixed(1),
-        drainage: drainageTypes[Math.floor(Math.random() * drainageTypes.length)],
-        elevation: Math.floor(Math.random() * 1000 + 100).toString(),
-        previousCrops: soil.previousCrops,
-        irrigationSource: soil.irrigationSource,
-      });
-
-      setIsAnalyzing(false);
-      toast({
-        title: "Soil Analysis Complete",
-        description: "AI has analyzed your soil characteristics based on location data.",
-      });
-    }, 2000);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -186,36 +235,48 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="latitude">Latitude</Label>
-              <Input
-                id="latitude"
-                value={coordinates.latitude}
-                onChange={(e) =>
-                  setCoordinates((prev) => ({
-                    ...prev,
-                    latitude: e.target.value,
-                  }))
-                }
-                placeholder="Enter latitude"
-                required
-              />
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label>Farm Coordinates</Label>
+              <Button 
+                type="button" 
+                onClick={getUserLocation}
+                variant="outline"
+              >
+                Auto-detect Location
+              </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="longitude">Longitude</Label>
-              <Input
-                id="longitude"
-                value={coordinates.longitude}
-                onChange={(e) =>
-                  setCoordinates((prev) => ({
-                    ...prev,
-                    longitude: e.target.value,
-                  }))
-                }
-                placeholder="Enter longitude"
-                required
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="latitude">Latitude</Label>
+                <Input
+                  id="latitude"
+                  value={coordinates.latitude}
+                  onChange={(e) =>
+                    setCoordinates((prev) => ({
+                      ...prev,
+                      latitude: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter latitude"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="longitude">Longitude</Label>
+                <Input
+                  id="longitude"
+                  value={coordinates.longitude}
+                  onChange={(e) =>
+                    setCoordinates((prev) => ({
+                      ...prev,
+                      longitude: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter longitude"
+                  required
+                />
+              </div>
             </div>
           </div>
 
@@ -224,7 +285,7 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
               <h3 className="text-lg font-medium">Soil Information</h3>
               <Button 
                 type="button" 
-                onClick={analyzeSoil}
+                onClick={() => analyzeSoil()}
                 disabled={isAnalyzing}
               >
                 {isAnalyzing ? "Analyzing..." : "Analyze Soil"}
@@ -234,74 +295,51 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Soil Type</Label>
-                <Select
+                <Input
                   value={soil.type}
-                  onValueChange={(value) => setSoil((prev) => ({ ...prev, type: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select soil type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="clay">Clay</SelectItem>
-                    <SelectItem value="sandy">Sandy</SelectItem>
-                    <SelectItem value="loam">Loam</SelectItem>
-                    <SelectItem value="silt">Silt</SelectItem>
-                    <SelectItem value="peat">Peat</SelectItem>
-                  </SelectContent>
-                </Select>
+                  readOnly
+                  placeholder="AI will analyze"
+                  className="bg-gray-50"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label>Soil Texture</Label>
-                <Select
+                <Input
                   value={soil.texture}
-                  onValueChange={(value) => setSoil((prev) => ({ ...prev, texture: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select soil texture" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fine">Fine</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="coarse">Coarse</SelectItem>
-                  </SelectContent>
-                </Select>
+                  readOnly
+                  placeholder="AI will analyze"
+                  className="bg-gray-50"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label>Organic Matter Content (%)</Label>
                 <Input
-                  type="number"
                   value={soil.organicMatter}
-                  onChange={(e) => setSoil((prev) => ({ ...prev, organicMatter: e.target.value }))}
-                  placeholder="Enter organic matter content"
+                  readOnly
+                  placeholder="AI will analyze"
+                  className="bg-gray-50"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Drainage</Label>
-                <Select
+                <Input
                   value={soil.drainage}
-                  onValueChange={(value) => setSoil((prev) => ({ ...prev, drainage: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select drainage type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="well">Well-drained</SelectItem>
-                    <SelectItem value="moderate">Moderately-drained</SelectItem>
-                    <SelectItem value="poor">Poorly-drained</SelectItem>
-                  </SelectContent>
-                </Select>
+                  readOnly
+                  placeholder="AI will analyze"
+                  className="bg-gray-50"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label>Elevation (meters)</Label>
                 <Input
-                  type="number"
                   value={soil.elevation}
-                  onChange={(e) => setSoil((prev) => ({ ...prev, elevation: e.target.value }))}
-                  placeholder="Enter elevation"
+                  readOnly
+                  placeholder="AI will analyze"
+                  className="bg-gray-50"
                 />
               </div>
 
