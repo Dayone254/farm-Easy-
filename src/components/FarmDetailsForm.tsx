@@ -14,7 +14,11 @@ interface FarmDetailsFormProps {
 
 const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
   const { toast } = useToast();
-  const setFarmDetails = useFarmStore((state) => state.setFarmDetails);
+  const { setFarmDetails, clearFarmDetails } = useFarmStore((state) => ({
+    setFarmDetails: state.setFarmDetails,
+    clearFarmDetails: state.clearFarmDetails,
+  }));
+  
   const [crops, setCrops] = useState<CropDetail[]>([]);
   const [location, setLocation] = useState("");
   const [totalArea, setTotalArea] = useState("");
@@ -163,6 +167,15 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
     onClose();
   };
 
+  const handleClear = () => {
+    clearFarmDetails();
+    toast({
+      title: "Farm Details Cleared",
+      description: "All farm details have been removed from storage.",
+    });
+    onClose();
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
       <div className="bg-background rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -200,6 +213,9 @@ const FarmDetailsForm = ({ onClose }: FarmDetailsFormProps) => {
           />
 
           <div className="flex justify-end gap-4">
+            <Button type="button" variant="destructive" onClick={handleClear}>
+              Clear Data
+            </Button>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>

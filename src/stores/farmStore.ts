@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 export interface CropDetail {
   name: string;
@@ -39,9 +40,18 @@ interface FarmStore {
     crops: CropDetail[];
     soil: SoilDetail;
   }) => void;
+  clearFarmDetails: () => void;
 }
 
-export const useFarmStore = create<FarmStore>((set) => ({
-  farmDetails: null,
-  setFarmDetails: (details) => set({ farmDetails: details }),
-}));
+export const useFarmStore = create<FarmStore>()(
+  persist(
+    (set) => ({
+      farmDetails: null,
+      setFarmDetails: (details) => set({ farmDetails: details }),
+      clearFarmDetails: () => set({ farmDetails: null }),
+    }),
+    {
+      name: 'farm-storage', // unique name for localStorage key
+    }
+  )
+);
