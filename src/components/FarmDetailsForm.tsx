@@ -21,7 +21,7 @@ interface FarmDetailsFormProps {
 
 const cropTypes = [
   // Grains and Cereals
-  "wheat", "corn", "rice", "barley", "oats", "rye", "sorghum", "millet",
+  "wheat", "maize", "rice", "barley", "oats", "rye", "sorghum", "millet",
   // Legumes
   "soybeans", "peanuts", "beans", "lentils", "chickpeas", "peas",
   // Vegetables
