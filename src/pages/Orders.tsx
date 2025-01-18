@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import * as XLSX from 'xlsx';
@@ -11,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import FinancialSummary from "@/components/FinancialSummary";
 import OrdersTable from "@/components/OrdersTable";
+import { useUser } from "@/contexts/UserContext";
 
 interface Order {
   id: string;
@@ -28,70 +30,84 @@ interface Order {
 const Orders = () => {
   const { toast } = useToast();
   const [viewType, setViewType] = useState<"buying" | "selling">("buying");
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: "ORD001",
-      buyer: "John Smith",
-      seller: "Farm Fresh Co.",
-      items: "Wheat (50kg)",
-      status: "Pending",
-      location: "Farm A",
-      price: 2500,
-      paymentStatus: "In Escrow",
-    },
-    {
-      id: "ORD002",
-      buyer: "Sarah Johnson",
-      seller: "Green Fields",
-      items: "Rice (100kg)",
-      status: "In Transit",
-      location: "Farm B",
-      price: 5000,
-      paymentStatus: "In Escrow",
-    },
-    {
-      id: "ORD003",
-      buyer: "Mike Brown",
-      seller: "Harvest Hub",
-      items: "Corn (75kg)",
-      status: "Delivered",
-      location: "Farm C",
-      price: 3500,
-      paymentStatus: "Released",
-    },
-  ]);
+  const { userProfile } = useUser();
+  const queryClient = useQueryClient();
 
-  const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
-    setOrders(orders.map(order => {
-      if (order.id === orderId) {
-        let paymentStatus = order.paymentStatus;
-        
-        if (newStatus === "Delivered") {
-          paymentStatus = "Released";
-        } else if (newStatus === "Cancelled") {
-          paymentStatus = "Refunded";
-        }
-        
-        return { ...order, status: newStatus, paymentStatus };
-      }
-      return order;
-    }));
+  // Fetch orders using React Query
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ['orders', viewType, userProfile?.id],
+    queryFn: async () => {
+      console.log('Fetching orders for user:', userProfile?.id, 'viewType:', viewType);
+      // Simulate API call - replace with actual API endpoint
+      const response = await fetch(`/api/orders/${userProfile?.id}?type=${viewType}`).catch(() => {
+        // Fallback data for demo purposes - remove this in production
+        console.log('Using fallback order data');
+        return {
+          json: async () => ([
+            {
+              id: `ORD${Date.now()}1`,
+              buyer: userProfile?.name || "Unknown",
+              seller: "Farm Fresh Co.",
+              items: "Wheat (50kg)",
+              status: "Pending",
+              location: userProfile?.location || "Unknown",
+              price: 2500,
+              paymentStatus: "In Escrow",
+            },
+            {
+              id: `ORD${Date.now()}2`,
+              buyer: userProfile?.name || "Unknown",
+              seller: "Green Fields",
+              items: "Rice (100kg)",
+              status: "In Transit",
+              location: userProfile?.location || "Unknown",
+              price: 5000,
+              paymentStatus: "In Escrow",
+            }
+          ])
+        };
+      });
+      const data = await response.json();
+      console.log('Received orders:', data);
+      return data;
+    },
+    enabled: !!userProfile?.id,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
-    toast({
-      title: "Order Updated",
-      description: `Order ${orderId} has been ${newStatus.toLowerCase()}.`,
-    });
+  // Update order status mutation
+  const updateOrderStatus = useMutation({
+    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: Order['status'] }) => {
+      console.log('Updating order status:', orderId, newStatus);
+      // Simulate API call - replace with actual API endpoint
+      const response = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      }).catch(() => {
+        console.log('Using mock update response');
+        return { ok: true };
+      });
+      return response.ok;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: "Order Updated",
+        description: "The order status has been successfully updated.",
+      });
+    },
+  });
+
+  const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
+    updateOrderStatus.mutate({ orderId, newStatus });
   };
 
-  const filteredOrders = orders.filter(order => 
-    viewType === "buying" ? order.buyer === "John Smith" : order.seller === "Farm Fresh Co."
-  );
-
   const calculateFinancials = () => {
-    const spent = filteredOrders.reduce((total, order) => 
+    const spent = orders.reduce((total, order) => 
       viewType === "buying" ? total + order.price : total, 0
     );
-    const earned = filteredOrders.reduce((total, order) => 
+    const earned = orders.reduce((total, order) => 
       viewType === "selling" ? total + order.price : total, 0
     );
     return { totalSpent: spent, totalEarned: earned };
@@ -101,9 +117,9 @@ const Orders = () => {
     // Create worksheet data
     const wsData = [
       ['Order ID', 'Date', viewType === 'buying' ? 'Seller' : 'Buyer', 'Items', 'Status', 'Payment Status', 'Amount (KSh)'],
-      ...filteredOrders.map(order => [
+      ...orders.map(order => [
         order.id,
-        new Date().toLocaleDateString(), // You might want to add actual dates to your orders
+        new Date().toLocaleDateString(),
         viewType === 'buying' ? order.seller : order.buyer,
         order.items,
         order.status,
@@ -113,23 +129,12 @@ const Orders = () => {
     ];
 
     // Add total row
-    const total = filteredOrders.reduce((sum, order) => sum + order.price, 0);
+    const total = orders.reduce((sum, order) => sum + order.price, 0);
     wsData.push(['', '', '', '', '', 'Total:', total]);
 
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(wsData);
-
-    // Style the header row
-    const range = XLSX.utils.decode_range(ws['!ref'] || 'A1');
-    for (let C = range.s.c; C <= range.e.c; ++C) {
-      const address = XLSX.utils.encode_col(C) + '1';
-      if (!ws[address]) continue;
-      ws[address].s = {
-        fill: { fgColor: { rgb: "2F5233" }, patternType: "solid" },
-        font: { color: { rgb: "FFFFFF" }, bold: true }
-      };
-    }
 
     // Add the worksheet to the workbook
     XLSX.utils.book_append_sheet(wb, ws, `${viewType === 'buying' ? 'Purchases' : 'Sales'} Statement`);
@@ -145,9 +150,12 @@ const Orders = () => {
 
   const { totalSpent, totalEarned } = calculateFinancials();
 
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-64">Loading orders...</div>;
+  }
+
   return (
     <div className="container mx-auto max-w-7xl">
-      {/* Header section - stacks vertically on mobile */}
       <div className="flex flex-col space-y-4 mb-6">
         <h1 className="text-3xl font-bold text-[#2F5233]">Orders & Tracking</h1>
         
@@ -173,15 +181,13 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* Financial Summary - already responsive from FinancialSummary component */}
       <div className="mb-6">
         <FinancialSummary totalSpent={totalSpent} totalEarned={totalEarned} />
       </div>
       
-      {/* Orders Table - handled by OrdersTable component */}
       <Card className="p-4 sm:p-6">
         <OrdersTable 
-          orders={filteredOrders}
+          orders={orders}
           viewType={viewType}
           onStatusChange={handleStatusChange}
         />
