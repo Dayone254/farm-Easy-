@@ -77,4 +77,12 @@
   .select-content {
     @apply bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg !important;
   }
+
+  /* Add hover styles for dropdown items */
+  [role="option"]:hover,
+  [role="menuitem"]:hover,
+  .select-item:hover,
+  [data-radix-collection-item]:hover {
+    @apply bg-[#2F5233] text-white !important;
+  }
 }
