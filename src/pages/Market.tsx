@@ -17,9 +17,9 @@ const Market = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isListingFormOpen, setIsListingFormOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([]);
-  const { toast } = useToast();
+  const [cartItems, setCartItems] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
+  const { toast } = useToast();
   const navigate = useNavigate();
   const { userProfile } = useUser();
 
@@ -40,8 +40,30 @@ const Market = () => {
     setProducts(prevProducts => [newProduct, ...prevProducts]);
     setIsListingFormOpen(false);
     toast({
-      title: "Product Listed",
-      description: "Your product has been successfully added to the marketplace.",
+      description: "Product listed successfully",
+    });
+  };
+
+  const handleAddToCart = (product: any) => {
+    if (product.seller.id === userProfile?.id) {
+      toast({
+        title: "Cannot add to cart",
+        description: "You cannot add your own products to the cart",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCartItems(prev => [...prev, product]);
+    toast({
+      description: "Product added to cart",
+    });
+  };
+
+  const handleRemoveFromCart = (index: number) => {
+    setCartItems(prev => prev.filter((_, i) => i !== index));
+    toast({
+      description: "Product removed from cart",
     });
   };
 
@@ -50,6 +72,7 @@ const Market = () => {
       title: "Order Created",
       description: "Your order has been created and is now being processed.",
     });
+    setCartItems([]);
     navigate("/orders");
   };
 
@@ -92,7 +115,11 @@ const Market = () => {
               List Product
             </Button>
           </div>
-          <Marketplace products={filteredProducts} setProducts={setProducts} />
+          <Marketplace 
+            products={filteredProducts} 
+            setProducts={setProducts} 
+            onAddToCart={handleAddToCart}
+          />
         </div>
       </div>
 
@@ -100,9 +127,7 @@ const Market = () => {
         open={isCartOpen} 
         onClose={() => setIsCartOpen(false)}
         items={cartItems}
-        onRemoveItem={(index) => {
-          setCartItems(prev => prev.filter((_, i) => i !== index));
-        }}
+        onRemoveItem={handleRemoveFromCart}
         onOrderCreated={handleOrderCreated}
       />
 

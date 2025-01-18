@@ -6,9 +6,10 @@ import SellerDialog from "./market/SellerDialog";
 interface MarketplaceProps {
   products: any[];
   setProducts: (products: any[]) => void;
+  onAddToCart: (product: any) => void;
 }
 
-const Marketplace = ({ products, setProducts }: MarketplaceProps) => {
+const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) => {
   const [selectedSeller, setSelectedSeller] = useState<any>(null);
   const { toast } = useToast();
 
@@ -42,6 +43,7 @@ const Marketplace = ({ products, setProducts }: MarketplaceProps) => {
               onRemove={handleRemoveProduct}
               onMarkAsSold={handleMarkAsSold}
               onSellerClick={setSelectedSeller}
+              onAddToCart={onAddToCart}
             />
           ))}
         </div>

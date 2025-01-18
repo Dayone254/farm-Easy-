@@ -1,4 +1,4 @@
-import { X, UserCheck, MessageCircle } from "lucide-react";
+import { X, UserCheck, MessageCircle, ShoppingCart } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,9 +13,10 @@ interface ProductCardProps {
   onRemove: (id: string | number) => void;
   onMarkAsSold: (id: string | number) => void;
   onSellerClick: (seller: any) => void;
+  onAddToCart: (product: any) => void;
 }
 
-const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: ProductCardProps) => {
+const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick, onAddToCart }: ProductCardProps) => {
   const { userProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -115,13 +116,22 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick }: Product
               Mark as Sold
             </Button>
           ) : (
-            <Button 
-              className="w-full"
-              onClick={handleContactSeller}
-            >
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Message Seller
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1"
+                onClick={handleContactSeller}
+              >
+                <MessageCircle className="w-4 h-4 mr-2" />
+                Message
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={() => onAddToCart(product)}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Add to Cart
+              </Button>
+            </div>
           )}
         </div>
       </div>
