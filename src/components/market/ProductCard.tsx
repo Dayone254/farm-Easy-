@@ -55,21 +55,13 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick, onAddToCa
       return;
     }
 
-    if (userProfile.id === product.seller.id) {
-      toast({
-        variant: "destructive",
-        title: "Cannot add to cart",
-        description: "You cannot add your own products to the cart",
-      });
-      return;
-    }
-
     onAddToCart(product);
     toast({
       description: "Product added to cart successfully",
     });
   };
 
+  // Check if the current user is the owner of the product
   const isOwner = userProfile?.id === product.seller.id;
 
   return (
