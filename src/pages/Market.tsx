@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,8 @@ import CartDrawer from "@/components/CartDrawer";
 import MarketFilters from "@/components/market/MarketFilters";
 import MarketHeader from "@/components/market/MarketHeader";
 import { useUser } from "@/contexts/UserContext";
+
+const STORAGE_KEY = "marketplace_products";
 
 const Market = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -21,6 +23,19 @@ const Market = () => {
   const navigate = useNavigate();
   const { userProfile } = useUser();
 
+  // Load products from localStorage on component mount
+  useEffect(() => {
+    const savedProducts = localStorage.getItem(STORAGE_KEY);
+    if (savedProducts) {
+      setProducts(JSON.parse(savedProducts));
+    }
+  }, []);
+
+  // Save products to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  }, [products]);
+
   const handleAddProduct = (newProduct: any) => {
     setProducts(prevProducts => [newProduct, ...prevProducts]);
     setIsListingFormOpen(false);
@@ -31,13 +46,22 @@ const Market = () => {
   };
 
   const handleOrderCreated = (orderDetails: any) => {
-    // After successful payment and order creation, navigate to orders page
     toast({
       title: "Order Created",
       description: "Your order has been created and is now being processed.",
     });
     navigate("/orders");
   };
+
+  const filteredProducts = products.filter((product) => {
+    if (selectedCategory !== "all" && product.category !== selectedCategory) return false;
+    
+    if (priceRange === "under1000") return product.price < 1000;
+    if (priceRange === "1000to5000") return product.price >= 1000 && product.price <= 5000;
+    if (priceRange === "over5000") return product.price > 5000;
+    
+    return true;
+  });
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -68,7 +92,7 @@ const Market = () => {
               List Product
             </Button>
           </div>
-          <Marketplace products={products} setProducts={setProducts} />
+          <Marketplace products={filteredProducts} setProducts={setProducts} />
         </div>
       </div>
 

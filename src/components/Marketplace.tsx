@@ -29,17 +29,23 @@ const Marketplace = ({ products, setProducts }: MarketplaceProps) => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onRemove={handleRemoveProduct}
-            onMarkAsSold={handleMarkAsSold}
-            onSellerClick={setSelectedSeller}
-          />
-        ))}
-      </div>
+      {products.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">No products available in the marketplace yet.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onRemove={handleRemoveProduct}
+              onMarkAsSold={handleMarkAsSold}
+              onSellerClick={setSelectedSeller}
+            />
+          ))}
+        </div>
+      )}
 
       <SellerDialog
         seller={selectedSeller}
