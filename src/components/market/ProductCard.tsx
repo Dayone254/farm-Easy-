@@ -1,4 +1,4 @@
-import { X, UserCheck, MessageCircle, ShoppingCart } from "lucide-react";
+import { MessageSquare, ShoppingCart, CheckSquare } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,8 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Strict equality check for ownership
-  const isOwner = userProfile?.id === product.seller?.id;
+  // Strict equality check for ownership - this is crucial for button display logic
+  const isOwner = Boolean(userProfile?.id && product.seller?.id && userProfile.id === product.seller.id);
 
   const handleContactSeller = () => {
     if (!userProfile) {
@@ -70,23 +70,16 @@ const ProductCard = ({
       return;
     }
 
-    onAddToCart(product);
-    toast({
-      description: "Product added to cart successfully",
-    });
+    if (!isOwner) {
+      onAddToCart(product);
+      toast({
+        description: "Product added to cart successfully",
+      });
+    }
   };
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow relative animate-fade-up">
-      {isOwner && (
-        <button
-          onClick={() => onRemove(product.id)}
-          className="absolute top-2 right-2 z-10 p-1.5 bg-white rounded-full shadow-lg hover:bg-red-50 transition-colors"
-        >
-          <X className="h-4 w-4 text-red-500" />
-        </button>
-      )}
-      
       <div className="aspect-video relative">
         <img
           src={product.image}
@@ -115,7 +108,7 @@ const ProductCard = ({
               </Avatar>
               {product.seller.isVerified && (
                 <Badge variant="secondary" className="absolute -bottom-1 -right-1 h-5 scale-75">
-                  <UserCheck className="h-3 w-3" />
+                  <CheckSquare className="h-3 w-3" />
                 </Badge>
               )}
             </div>
@@ -151,7 +144,7 @@ const ProductCard = ({
                 className="flex-1"
                 onClick={handleContactSeller}
               >
-                <MessageCircle className="w-4 h-4 mr-2" />
+                <MessageSquare className="w-4 h-4 mr-2" />
                 Message
               </Button>
               <Button
