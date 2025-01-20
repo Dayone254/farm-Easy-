@@ -1,4 +1,4 @@
-import { MessageSquare, ShoppingCart, CheckSquare } from "lucide-react";
+import { MessageSquare, ShoppingCart, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,12 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Strict equality check for ownership - this is crucial for button display logic
-  const isOwner = Boolean(userProfile?.id && product.seller?.id && userProfile.id === product.seller.id);
+  // Strict ownership check
+  const isOwner = Boolean(
+    userProfile?.id && 
+    product.seller?.id && 
+    userProfile.id === product.seller.id
+  );
 
   const handleContactSeller = () => {
     if (!userProfile) {
@@ -36,6 +40,15 @@ const ProductCard = ({
         variant: "destructive",
         title: "Login Required",
         description: "Please login to message sellers.",
+      });
+      return;
+    }
+
+    // Prevent messaging yourself
+    if (isOwner) {
+      toast({
+        variant: "destructive",
+        description: "You cannot message yourself about your own product.",
       });
       return;
     }
@@ -70,12 +83,43 @@ const ProductCard = ({
       return;
     }
 
-    if (!isOwner) {
-      onAddToCart(product);
+    // Prevent adding own products to cart
+    if (isOwner) {
       toast({
-        description: "Product added to cart successfully",
+        variant: "destructive",
+        description: "You cannot add your own products to cart.",
       });
+      return;
     }
+
+    onAddToCart(product);
+    toast({
+      description: "Product added to cart successfully",
+    });
+  };
+
+  const handleRemoveProduct = () => {
+    if (!isOwner) {
+      toast({
+        variant: "destructive",
+        description: "You can only remove your own products.",
+      });
+      return;
+    }
+
+    onRemove(product.id);
+  };
+
+  const handleMarkAsSold = () => {
+    if (!isOwner) {
+      toast({
+        variant: "destructive",
+        description: "You can only mark your own products as sold.",
+      });
+      return;
+    }
+
+    onMarkAsSold(product.id);
   };
 
   return (
@@ -108,7 +152,7 @@ const ProductCard = ({
               </Avatar>
               {product.seller.isVerified && (
                 <Badge variant="secondary" className="absolute -bottom-1 -right-1 h-5 scale-75">
-                  <CheckSquare className="h-3 w-3" />
+                  ✓
                 </Badge>
               )}
             </div>
@@ -130,13 +174,23 @@ const ProductCard = ({
 
         <div className="pt-2 border-t">
           {isOwner ? (
-            <Button 
-              variant="destructive"
-              className="w-full"
-              onClick={() => onMarkAsSold(product.id)}
-            >
-              Mark as Sold
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="destructive"
+                className="flex-1"
+                onClick={handleRemoveProduct}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Remove
+              </Button>
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={handleMarkAsSold}
+              >
+                Mark as Sold
+              </Button>
+            </div>
           ) : (
             <div className="flex gap-2">
               <Button 
