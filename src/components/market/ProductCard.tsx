@@ -27,6 +27,7 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Strict equality check for ownership
   const isOwner = userProfile?.id === product.seller?.id;
 
   const handleContactSeller = () => {
