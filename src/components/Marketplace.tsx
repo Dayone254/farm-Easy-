@@ -18,7 +18,7 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
   const handleMarkAsSold = (productId: string | number) => {
     const product = products.find(p => p.id === productId);
     
-    // Check if the current user is the owner of the product
+    // Double-check ownership at the marketplace level
     if (product?.seller?.id !== userProfile?.id) {
       toast({
         variant: "destructive",
@@ -28,17 +28,17 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
       return;
     }
 
-    setProducts(products.filter(product => product.id !== productId));
+    setProducts(products.filter(p => p.id !== productId));
     toast({
-      title: "Product Marked as Sold",
-      description: "The product has been removed from the marketplace.",
+      title: "Success",
+      description: "Product has been marked as sold.",
     });
   };
 
   const handleRemoveProduct = (productId: string | number) => {
     const product = products.find(p => p.id === productId);
     
-    // Check if the current user is the owner of the product
+    // Double-check ownership at the marketplace level
     if (product?.seller?.id !== userProfile?.id) {
       toast({
         variant: "destructive",
@@ -48,7 +48,7 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
       return;
     }
 
-    setProducts(products.filter(product => product.id !== productId));
+    setProducts(products.filter(p => p.id !== productId));
     toast({
       description: "Product removed from marketplace",
     });

@@ -27,7 +27,7 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Strict ownership check - user must be logged in and be the product owner
+  // Strict ownership check - user must be logged in and match the seller ID
   const isOwner = userProfile?.id === product.seller?.id;
 
   const handleContactSeller = () => {
@@ -36,6 +36,15 @@ const ProductCard = ({
         variant: "destructive",
         title: "Login Required",
         description: "Please login to message sellers.",
+      });
+      return;
+    }
+
+    // Prevent messaging yourself
+    if (isOwner) {
+      toast({
+        variant: "destructive",
+        description: "You cannot message yourself about your own product.",
       });
       return;
     }
@@ -70,6 +79,15 @@ const ProductCard = ({
       return;
     }
 
+    // Prevent adding your own product to cart
+    if (isOwner) {
+      toast({
+        variant: "destructive",
+        description: "You cannot add your own product to cart.",
+      });
+      return;
+    }
+
     onAddToCart(product);
     toast({
       description: "Product added to cart successfully",
@@ -77,18 +95,27 @@ const ProductCard = ({
   };
 
   const handleRemoveProduct = () => {
+    // Double-check ownership before removing
+    if (!isOwner) {
+      toast({
+        variant: "destructive",
+        description: "You can only remove your own products.",
+      });
+      return;
+    }
     onRemove(product.id);
-    toast({
-      description: "Product removed from marketplace",
-    });
   };
 
   const handleMarkAsSold = () => {
+    // Double-check ownership before marking as sold
+    if (!isOwner) {
+      toast({
+        variant: "destructive",
+        description: "You can only mark your own products as sold.",
+      });
+      return;
+    }
     onMarkAsSold(product.id);
-    toast({
-      title: "Product Marked as Sold",
-      description: "The product has been removed from the marketplace.",
-    });
   };
 
   return (
