@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import ProductCard from "./market/ProductCard";
 import SellerDialog from "./market/SellerDialog";
+import { useUser } from "@/contexts/UserContext";
 
 interface MarketplaceProps {
   products: any[];
@@ -12,8 +13,21 @@ interface MarketplaceProps {
 const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) => {
   const [selectedSeller, setSelectedSeller] = useState<any>(null);
   const { toast } = useToast();
+  const { userProfile } = useUser();
 
   const handleMarkAsSold = (productId: string | number) => {
+    const product = products.find(p => p.id === productId);
+    
+    // Check if the current user is the owner of the product
+    if (product?.seller?.id !== userProfile?.id) {
+      toast({
+        variant: "destructive",
+        title: "Unauthorized",
+        description: "You can only mark your own products as sold.",
+      });
+      return;
+    }
+
     setProducts(products.filter(product => product.id !== productId));
     toast({
       title: "Product Marked as Sold",
@@ -22,6 +36,18 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
   };
 
   const handleRemoveProduct = (productId: string | number) => {
+    const product = products.find(p => p.id === productId);
+    
+    // Check if the current user is the owner of the product
+    if (product?.seller?.id !== userProfile?.id) {
+      toast({
+        variant: "destructive",
+        title: "Unauthorized",
+        description: "You can only remove your own products.",
+      });
+      return;
+    }
+
     setProducts(products.filter(product => product.id !== productId));
     toast({
       description: "Product removed from marketplace",
