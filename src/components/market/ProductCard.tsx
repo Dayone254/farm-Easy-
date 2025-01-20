@@ -6,8 +6,8 @@ import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/utils/currency";
 import { useState } from "react";
-import ProductOwnerActions from "./ProductOwnerActions";
-import ProductBuyerActions from "./ProductBuyerActions";
+import { Button } from "@/components/ui/button";
+import { MessageSquare, ShoppingCart, Trash2 } from "lucide-react";
 
 interface ProductCardProps {
   product: any;
@@ -29,21 +29,19 @@ const ProductCard = ({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Strict ownership check based on user profile ID
-  const isOwner = Boolean(
-    userProfile?.id && 
-    product.seller?.id && 
-    String(userProfile.id) === String(product.seller.id)
-  );
+  // Convert IDs to strings for comparison
+  const currentUserId = String(userProfile?.id || '');
+  const sellerId = String(product.seller?.id || '');
+  const isOwner = currentUserId === sellerId && currentUserId !== '';
 
   console.log("Product Card Render:", {
     productId: product.id,
-    sellerId: product.seller?.id,
-    currentUserId: userProfile?.id,
-    isOwner
+    sellerId: sellerId,
+    currentUserId: currentUserId,
+    isOwner: isOwner
   });
 
-  const handleContactSeller = async () => {
+  const handleContactSeller = () => {
     if (!userProfile) {
       toast({
         variant: "destructive",
@@ -53,22 +51,12 @@ const ProductCard = ({
       return;
     }
 
-    if (isOwner) {
-      toast({
-        variant: "destructive",
-        description: "You cannot message yourself about your own product.",
-      });
-      return;
-    }
-
     navigate("/messages", { 
       state: { 
         selectedContact: {
           id: product.seller.id,
           name: product.seller.name,
-          userType: product.seller.userType || "seller",
           profileImage: product.seller.profileImage,
-          phoneNumber: product.seller.phoneNumber || "",
           status: "Active now"
         },
         productInfo: {
@@ -91,14 +79,6 @@ const ProductCard = ({
       return;
     }
 
-    if (isOwner) {
-      toast({
-        variant: "destructive",
-        description: "You cannot add your own product to cart.",
-      });
-      return;
-    }
-
     onAddToCart(product);
     toast({
       description: "Product added to cart successfully",
@@ -108,20 +88,6 @@ const ProductCard = ({
   const handleRemoveProduct = async () => {
     try {
       setIsLoading(true);
-      console.log("Attempting to remove product:", {
-        productId: product.id,
-        sellerId: product.seller?.id,
-        currentUserId: userProfile?.id
-      });
-
-      if (!isOwner) {
-        toast({
-          variant: "destructive",
-          description: "You can only remove your own products.",
-        });
-        return;
-      }
-
       await onRemove(product.id);
       toast({
         description: "Product removed successfully",
@@ -140,20 +106,6 @@ const ProductCard = ({
   const handleMarkAsSold = async () => {
     try {
       setIsLoading(true);
-      console.log("Attempting to mark product as sold:", {
-        productId: product.id,
-        sellerId: product.seller?.id,
-        currentUserId: userProfile?.id
-      });
-
-      if (!isOwner) {
-        toast({
-          variant: "destructive",
-          description: "You can only mark your own products as sold.",
-        });
-        return;
-      }
-
       await onMarkAsSold(product.id);
       toast({
         description: "Product marked as sold successfully",
@@ -167,6 +119,54 @@ const ProductCard = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const renderActionButtons = () => {
+    if (isOwner) {
+      return (
+        <div className="flex gap-2">
+          <Button 
+            variant="destructive"
+            className="flex-1"
+            onClick={handleRemoveProduct}
+            disabled={isLoading}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Remove
+          </Button>
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={handleMarkAsSold}
+            disabled={isLoading}
+          >
+            Mark as Sold
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex gap-2">
+        <Button 
+          variant="outline"
+          className="flex-1"
+          onClick={handleContactSeller}
+          disabled={isLoading}
+        >
+          <MessageSquare className="w-4 h-4 mr-2" />
+          Message
+        </Button>
+        <Button
+          className="flex-1"
+          onClick={handleAddToCart}
+          disabled={isLoading}
+        >
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          Add to Cart
+        </Button>
+      </div>
+    );
   };
 
   return (
@@ -220,19 +220,7 @@ const ProductCard = ({
         </div>
 
         <div className="pt-2 border-t">
-          {isOwner ? (
-            <ProductOwnerActions
-              onRemove={handleRemoveProduct}
-              onMarkAsSold={handleMarkAsSold}
-              isLoading={isLoading}
-            />
-          ) : (
-            <ProductBuyerActions
-              onMessage={handleContactSeller}
-              onAddToCart={handleAddToCart}
-              isLoading={isLoading}
-            />
-          )}
+          {renderActionButtons()}
         </div>
       </div>
     </Card>
