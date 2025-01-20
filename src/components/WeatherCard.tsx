@@ -1,4 +1,4 @@
-import { Cloud, Sun, Moon, Wind, Droplets, MapPin, Clock } from "lucide-react";
+import { Cloud, Sun, Moon, Wind, Droplets, MapPin, Clock, Calendar } from "lucide-react";
 import { format, addHours, addDays } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
@@ -74,8 +74,8 @@ const WeatherCard = ({ showHourly = false }: WeatherCardProps) => {
           </div>
         </div>
 
-        {/* Hourly Forecast Section - Redesigned */}
-        {showHourly && (
+        {/* Hourly Forecast Section */}
+        {showHourly ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-cream/80">
               <Clock className="h-4 w-4" />
@@ -97,6 +97,36 @@ const WeatherCard = ({ showHourly = false }: WeatherCardProps) => {
                   <div className="flex items-center justify-center gap-1 text-xs text-cream/70">
                     <Droplets className="h-3 w-3" />
                     <span>{hour.humidity}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Weekly Forecast Section */
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-cream/80">
+              <Calendar className="h-4 w-4" />
+              <h3 className="font-medium">Weekly Forecast</h3>
+            </div>
+            <div className="grid grid-cols-7 gap-4">
+              {weeklyData.map((day, index) => (
+                <div
+                  key={index}
+                  className="bg-secondary/30 rounded-lg p-3 text-center hover:bg-secondary/40 transition-colors"
+                >
+                  <div className="text-sm font-medium mb-2">{day.day}</div>
+                  {day.icon === "Sun" ? (
+                    <Sun className="h-6 w-6 mx-auto mb-2 text-cream" />
+                  ) : day.icon === "Cloud" ? (
+                    <Cloud className="h-6 w-6 mx-auto mb-2 text-cream" />
+                  ) : (
+                    <Moon className="h-6 w-6 mx-auto mb-2 text-cream" />
+                  )}
+                  <div className="text-lg font-semibold mb-1">{day.temp}°</div>
+                  <div className="flex flex-col items-center text-xs text-cream/70">
+                    <span>H: {day.high}°</span>
+                    <span>L: {day.low}°</span>
                   </div>
                 </div>
               ))}
