@@ -75,7 +75,6 @@ const Dashboard = () => {
           <CommunityForum />
         </div>
       </div>
-    );
   }
 
   return (
@@ -83,7 +82,7 @@ const Dashboard = () => {
       {/* Top Priority Section - Critical Farm Data */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <CropAnalysisDetails />
-        <WeatherCard />
+        <WeatherCard showHourly={true} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

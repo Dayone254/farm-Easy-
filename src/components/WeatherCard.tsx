@@ -1,9 +1,13 @@
 import { Cloud, Sun, Moon, Wind, Droplets, MapPin } from "lucide-react";
-import { format, addDays } from "date-fns";
+import { format, addHours, addDays } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
-const WeatherCard = () => {
+interface WeatherCardProps {
+  showHourly?: boolean;
+}
+
+const WeatherCard = ({ showHourly = false }: WeatherCardProps) => {
   const currentDate = new Date();
   const location = "Nairobi, Kenya";
   const currentTemp = 24;
@@ -11,6 +15,17 @@ const WeatherCard = () => {
   const feelsLike = 22;
   const highTemp = 28;
   const lowTemp = 18;
+
+  // Generate hourly data for the temperature graph
+  const hourlyData = Array.from({ length: 24 }, (_, i) => {
+    const hour = addHours(currentDate, i);
+    return {
+      time: format(hour, 'HH:mm'),
+      temp: Math.floor(18 + Math.random() * 10),
+      icon: i >= 6 && i <= 18 ? "Sun" : "Moon", // Sun during day hours
+      humidity: Math.floor(60 + Math.random() * 20),
+    };
+  });
 
   // Generate weekly data for the temperature graph
   const weeklyData = Array.from({ length: 7 }, (_, i) => {
@@ -24,11 +39,16 @@ const WeatherCard = () => {
     };
   });
 
-  // Generate chart data
-  const chartData = weeklyData.map(day => ({
-    name: day.day,
-    temperature: day.temp,
-  }));
+  // Generate chart data based on view type
+  const chartData = showHourly 
+    ? hourlyData.map(hour => ({
+        name: hour.time,
+        temperature: hour.temp,
+      }))
+    : weeklyData.map(day => ({
+        name: day.day,
+        temperature: day.temp,
+      }));
 
   return (
     <Card className="w-full bg-primary/95 text-cream p-6 rounded-xl">
@@ -54,29 +74,40 @@ const WeatherCard = () => {
           </div>
         </div>
 
-        {/* Weekly Forecast */}
+        {/* Forecast Section */}
         <div className="space-y-4">
           <div className="text-sm text-cream/70">
-            Weekly forecast shows stable temperatures with occasional cloud cover.
+            {showHourly 
+              ? "Today's hourly forecast shows temperature variations throughout the day."
+              : "Weekly forecast shows stable temperatures with occasional cloud cover."}
           </div>
           
-          <div className="grid grid-cols-7 gap-4">
-            {weeklyData.map((day, index) => (
+          <div className="grid grid-cols-8 gap-4 overflow-x-auto">
+            {(showHourly ? hourlyData : weeklyData).map((item, index) => (
               <div
                 key={index}
                 className="flex flex-col items-center text-center space-y-2"
               >
-                <span className="text-sm font-medium text-cream">{day.day}</span>
-                {day.icon === "Sun" ? (
+                <span className="text-sm font-medium text-cream">
+                  {showHourly ? item.time : item.day}
+                </span>
+                {item.icon === "Sun" ? (
                   <Sun className="h-5 w-5 text-cream" />
-                ) : day.icon === "Moon" ? (
+                ) : item.icon === "Moon" ? (
                   <Moon className="h-5 w-5 text-cream" />
                 ) : (
                   <Cloud className="h-5 w-5 text-cream/80" />
                 )}
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm text-cream">{day.high}°</span>
-                  <span className="text-xs text-cream/70">{day.low}°</span>
+                  <span className="text-sm text-cream">
+                    {showHourly ? `${item.temp}°` : `${item.high}°`}
+                  </span>
+                  {!showHourly && (
+                    <span className="text-xs text-cream/70">{item.low}°</span>
+                  )}
+                  {showHourly && (
+                    <span className="text-xs text-cream/70">{item.humidity}%</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -111,7 +142,11 @@ const WeatherCard = () => {
         <div className="space-y-2">
           <h3 className="text-cream/70">Trending Now</h3>
           <div className="bg-secondary/80 rounded-lg p-4">
-            <p className="text-sm text-cream">Weather Alert: Clear skies expected throughout the week</p>
+            <p className="text-sm text-cream">
+              {showHourly 
+                ? "Weather Alert: Best time for irrigation is during early morning hours"
+                : "Weather Alert: Clear skies expected throughout the week"}
+            </p>
             <div className="flex gap-1 mt-2">
               {[1, 2, 3, 4, 5].map((dot) => (
                 <div
