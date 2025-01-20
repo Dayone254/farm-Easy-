@@ -77,7 +77,6 @@ const Market = () => {
     toast({
       description: "Product added to cart",
     });
-    setIsCartOpen(true); // Open cart drawer when item is added
   };
 
   const handleRemoveFromCart = (index: number) => {
