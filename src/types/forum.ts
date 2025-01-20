@@ -3,6 +3,7 @@ export interface Comment {
   content: string;
   author: string;
   createdAt: string;
+  likes: string[]; // Array of user IDs who liked the comment
 }
 
 export interface ForumPost {
@@ -12,4 +13,5 @@ export interface ForumPost {
   author: string;
   createdAt: string;
   comments: Comment[];
+  likes: string[]; // Array of user IDs who liked the post
 }

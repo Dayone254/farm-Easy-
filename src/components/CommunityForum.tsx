@@ -4,12 +4,14 @@ import { ForumPost as ForumPostType } from "../types/forum";
 import ForumPost from "./ForumPost";
 import CreatePostDialog from "./CreatePostDialog";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
 
 const STORAGE_KEY = "forum_posts";
 
 const CommunityForum = () => {
   const [posts, setPosts] = useState<ForumPostType[]>([]);
   const { toast } = useToast();
+  const { userProfile } = useUser();
 
   useEffect(() => {
     const savedPosts = localStorage.getItem(STORAGE_KEY);
@@ -28,9 +30,10 @@ const CommunityForum = () => {
       id: Date.now().toString(),
       title,
       content,
-      author: "Current User", // In a real app, this would come from auth
+      author: userProfile?.name || "Anonymous",
       createdAt: new Date().toISOString(),
       comments: [],
+      likes: [],
     };
     savePosts([newPost, ...posts]);
     toast({
@@ -49,11 +52,62 @@ const CommunityForum = () => {
             {
               id: Date.now().toString(),
               content,
-              author: "Current User", // In a real app, this would come from auth
+              author: userProfile?.name || "Anonymous",
               createdAt: new Date().toISOString(),
+              likes: [],
             },
           ],
         };
+      }
+      return post;
+    });
+    savePosts(updatedPosts);
+  };
+
+  const handleToggleLike = (postId: string) => {
+    if (!userProfile?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to like posts",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedPosts = posts.map((post) => {
+      if (post.id === postId) {
+        const likes = post.likes.includes(userProfile.id)
+          ? post.likes.filter((id) => id !== userProfile.id)
+          : [...post.likes, userProfile.id];
+        return { ...post, likes };
+      }
+      return post;
+    });
+    savePosts(updatedPosts);
+  };
+
+  const handleToggleCommentLike = (postId: string, commentId: string) => {
+    if (!userProfile?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to like comments",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedPosts = posts.map((post) => {
+      if (post.id === postId) {
+        const updatedComments = post.comments.map((comment) => {
+          if (comment.id === commentId) {
+            const likes = comment.likes.includes(userProfile.id)
+              ? comment.likes.filter((id) => id !== userProfile.id)
+              : [...comment.likes, userProfile.id];
+            return { ...comment, likes };
+          }
+          return comment;
+        });
+        return { ...post, comments: updatedComments };
       }
       return post;
     });
@@ -75,6 +129,8 @@ const CommunityForum = () => {
             key={post.id}
             post={post}
             onAddComment={handleAddComment}
+            onToggleLike={handleToggleLike}
+            onToggleCommentLike={handleToggleCommentLike}
           />
         ))}
         {posts.length === 0 && (
