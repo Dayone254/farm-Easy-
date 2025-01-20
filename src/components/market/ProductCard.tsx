@@ -27,8 +27,12 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  console.log("Current user ID:", userProfile?.id);
+  console.log("Product seller ID:", product.seller?.id);
+  console.log("Is owner check:", userProfile?.id === product.seller?.id);
+
   // Strict ownership check based on user profile ID
-  const isOwner = Boolean(userProfile?.id && product.seller?.id === userProfile.id);
+  const isOwner = userProfile?.id === product.seller?.id;
 
   const handleContactSeller = () => {
     if (!userProfile) {
