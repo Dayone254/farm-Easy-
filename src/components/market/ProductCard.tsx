@@ -27,8 +27,8 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Determine if the current user is the owner of the product
-  const isOwner = userProfile?.id === product.seller?.id;
+  // Strict check for product ownership
+  const isOwner = Boolean(userProfile?.id && product.seller?.id && userProfile.id === product.seller.id);
 
   const handleContactSeller = () => {
     if (!userProfile) {
@@ -64,6 +64,15 @@ const ProductCard = ({
       return;
     }
 
+    if (isOwner) {
+      toast({
+        variant: "destructive",
+        title: "Cannot add to cart",
+        description: "You cannot add your own products to the cart.",
+      });
+      return;
+    }
+
     onAddToCart(product);
     toast({
       description: "Product added to cart successfully",
@@ -72,7 +81,7 @@ const ProductCard = ({
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow relative animate-fade-up">
-      {/* Only show remove button if user is the owner */}
+      {/* Remove button - Only visible to product owner */}
       {isOwner && (
         <button
           onClick={() => onRemove(product.id)}
@@ -132,7 +141,7 @@ const ProductCard = ({
 
         <div className="pt-2 border-t space-y-2">
           {isOwner ? (
-            // Owner sees "Mark as Sold" button
+            // Owner actions - Show Mark as Sold button
             <Button 
               variant="destructive"
               className="w-full"
@@ -141,7 +150,7 @@ const ProductCard = ({
               Mark as Sold
             </Button>
           ) : (
-            // Non-owners see "Message" and "Add to Cart" buttons
+            // Non-owner actions - Show Message and Add to Cart buttons
             <div className="flex gap-2">
               <Button 
                 variant="outline"
