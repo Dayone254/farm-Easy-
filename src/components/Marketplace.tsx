@@ -16,10 +16,18 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
   const { userProfile } = useUser();
 
   const handleMarkAsSold = (productId: string | number) => {
+    // Strict ownership check based on user profile ID
+    if (!userProfile?.id) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to manage your products.",
+      });
+      return;
+    }
+
     const product = products.find(p => p.id === productId);
-    
-    // Double-check ownership at the marketplace level
-    if (product?.seller?.id !== userProfile?.id) {
+    if (!product || product.seller?.id !== userProfile.id) {
       toast({
         variant: "destructive",
         title: "Unauthorized",
@@ -36,10 +44,18 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
   };
 
   const handleRemoveProduct = (productId: string | number) => {
+    // Strict ownership check based on user profile ID
+    if (!userProfile?.id) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to manage your products.",
+      });
+      return;
+    }
+
     const product = products.find(p => p.id === productId);
-    
-    // Double-check ownership at the marketplace level
-    if (product?.seller?.id !== userProfile?.id) {
+    if (!product || product.seller?.id !== userProfile.id) {
       toast({
         variant: "destructive",
         title: "Unauthorized",

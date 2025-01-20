@@ -27,11 +27,11 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Strict ownership check - user must be logged in and match the seller ID
-  const isOwner = userProfile?.id === product.seller?.id;
+  // Strict ownership check based on user profile ID
+  const isOwner = Boolean(userProfile?.id && product.seller?.id === userProfile.id);
 
   const handleContactSeller = () => {
-    if (!userProfile) {
+    if (!userProfile?.id) {
       toast({
         variant: "destructive",
         title: "Login Required",
@@ -70,7 +70,7 @@ const ProductCard = ({
   };
 
   const handleAddToCart = () => {
-    if (!userProfile) {
+    if (!userProfile?.id) {
       toast({
         variant: "destructive",
         title: "Login Required",
@@ -95,7 +95,7 @@ const ProductCard = ({
   };
 
   const handleRemoveProduct = () => {
-    // Double-check ownership before removing
+    // Strict ownership check before removing
     if (!isOwner) {
       toast({
         variant: "destructive",
@@ -107,7 +107,7 @@ const ProductCard = ({
   };
 
   const handleMarkAsSold = () => {
-    // Double-check ownership before marking as sold
+    // Strict ownership check before marking as sold
     if (!isOwner) {
       toast({
         variant: "destructive",
