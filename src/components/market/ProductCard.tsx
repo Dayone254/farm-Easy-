@@ -69,15 +69,6 @@ const ProductCard = ({
       return;
     }
 
-    if (isOwner) {
-      toast({
-        variant: "destructive",
-        title: "Cannot add to cart",
-        description: "You cannot add your own products to the cart.",
-      });
-      return;
-    }
-
     onAddToCart(product);
     toast({
       description: "Product added to cart successfully",
@@ -165,7 +156,7 @@ const ProductCard = ({
               </Button>
               <Button
                 className="flex-1"
-                onClick={() => onAddToCart(product)}
+                onClick={handleAddToCart}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Add to Cart
