@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/utils/currency";
+import { useState } from "react";
 import ProductOwnerActions from "./ProductOwnerActions";
 import ProductBuyerActions from "./ProductBuyerActions";
 
@@ -26,6 +27,7 @@ const ProductCard = ({
   const { userProfile } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Strict ownership check based on user profile ID
   const isOwner = Boolean(
@@ -34,13 +36,14 @@ const ProductCard = ({
     String(userProfile.id) === String(product.seller.id)
   );
 
-  console.log("Ownership check details:", {
-    userProfileId: userProfile?.id,
-    sellerProfileId: product.seller?.id,
+  console.log("Product Card Render:", {
+    productId: product.id,
+    sellerId: product.seller?.id,
+    currentUserId: userProfile?.id,
     isOwner
   });
 
-  const handleContactSeller = () => {
+  const handleContactSeller = async () => {
     if (!userProfile) {
       toast({
         variant: "destructive",
@@ -50,7 +53,6 @@ const ProductCard = ({
       return;
     }
 
-    // Prevent messaging yourself
     if (isOwner) {
       toast({
         variant: "destructive",
@@ -75,8 +77,7 @@ const ProductCard = ({
           price: product.price,
           image: product.image
         }
-      },
-      replace: true // Use replace to prevent history stack issues
+      }
     });
   };
 
@@ -90,7 +91,6 @@ const ProductCard = ({
       return;
     }
 
-    // Prevent adding your own product to cart
     if (isOwner) {
       toast({
         variant: "destructive",
@@ -105,26 +105,68 @@ const ProductCard = ({
     });
   };
 
-  const handleRemoveProduct = () => {
-    if (!isOwner) {
+  const handleRemoveProduct = async () => {
+    try {
+      setIsLoading(true);
+      console.log("Attempting to remove product:", {
+        productId: product.id,
+        sellerId: product.seller?.id,
+        currentUserId: userProfile?.id
+      });
+
+      if (!isOwner) {
+        toast({
+          variant: "destructive",
+          description: "You can only remove your own products.",
+        });
+        return;
+      }
+
+      await onRemove(product.id);
+      toast({
+        description: "Product removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing product:", error);
       toast({
         variant: "destructive",
-        description: "You can only remove your own products.",
+        description: "Failed to remove product. Please try again.",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    onRemove(product.id);
   };
 
-  const handleMarkAsSold = () => {
-    if (!isOwner) {
+  const handleMarkAsSold = async () => {
+    try {
+      setIsLoading(true);
+      console.log("Attempting to mark product as sold:", {
+        productId: product.id,
+        sellerId: product.seller?.id,
+        currentUserId: userProfile?.id
+      });
+
+      if (!isOwner) {
+        toast({
+          variant: "destructive",
+          description: "You can only mark your own products as sold.",
+        });
+        return;
+      }
+
+      await onMarkAsSold(product.id);
+      toast({
+        description: "Product marked as sold successfully",
+      });
+    } catch (error) {
+      console.error("Error marking product as sold:", error);
       toast({
         variant: "destructive",
-        description: "You can only mark your own products as sold.",
+        description: "Failed to mark product as sold. Please try again.",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    onMarkAsSold(product.id);
   };
 
   return (
@@ -182,11 +224,13 @@ const ProductCard = ({
             <ProductOwnerActions
               onRemove={handleRemoveProduct}
               onMarkAsSold={handleMarkAsSold}
+              isLoading={isLoading}
             />
           ) : (
             <ProductBuyerActions
               onMessage={handleContactSeller}
               onAddToCart={handleAddToCart}
+              isLoading={isLoading}
             />
           )}
         </div>
