@@ -45,7 +45,7 @@ const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full mb-4">
+        <Button className="w-full mb-4 text-black bg-white hover:bg-gray-100">
           <Plus className="w-4 h-4 mr-2" />
           Create New Post
         </Button>
@@ -60,6 +60,7 @@ const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
               placeholder="Post title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              className="text-black"
             />
           </div>
           <div>
@@ -68,6 +69,7 @@ const CreatePostDialog = ({ onPostCreated }: CreatePostDialogProps) => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={5}
+              className="text-black"
             />
           </div>
           <Button type="submit" className="w-full">
