@@ -72,9 +72,6 @@ const ProductCard = ({ product, onRemove, onMarkAsSold, onSellerClick, onAddToCa
 
   // Check if the current user is the owner of the product
   const isOwner = userProfile?.id === product.seller?.id;
-  console.log('Current user ID:', userProfile?.id);
-  console.log('Product seller ID:', product.seller?.id);
-  console.log('Is owner?', isOwner);
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow relative animate-fade-up">
