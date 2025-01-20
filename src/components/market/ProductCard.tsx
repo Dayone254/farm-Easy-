@@ -27,7 +27,6 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Strict check for product ownership
   const isOwner = Boolean(userProfile?.id && product.seller?.id && userProfile.id === product.seller.id);
 
   const handleContactSeller = () => {
@@ -49,6 +48,12 @@ const ProductCard = ({
           profileImage: product.seller.profileImage,
           phoneNumber: product.seller.phoneNumber || "",
           status: "Active now"
+        },
+        productInfo: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.image
         }
       }
     });
@@ -141,7 +146,6 @@ const ProductCard = ({
 
         <div className="pt-2 border-t space-y-2">
           {isOwner ? (
-            // Owner actions - Show Mark as Sold button
             <Button 
               variant="destructive"
               className="w-full"
@@ -150,7 +154,6 @@ const ProductCard = ({
               Mark as Sold
             </Button>
           ) : (
-            // Non-owner actions - Show Message and Add to Cart buttons
             <div className="flex gap-2">
               <Button 
                 variant="outline"
@@ -162,7 +165,7 @@ const ProductCard = ({
               </Button>
               <Button
                 className="flex-1"
-                onClick={handleAddToCart}
+                onClick={() => onAddToCart(product)}
               >
                 <ShoppingCart className="w-4 h-4 mr-2" />
                 Add to Cart

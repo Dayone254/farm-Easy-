@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/contexts/UserContext";
-import { MessageCircle, Phone, Search, ArrowLeft } from "lucide-react";
+import { MessageCircle, Phone, Search, ArrowLeft, ShoppingBag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
+import { Card } from "@/components/ui/card";
+import { formatCurrency } from "@/utils/currency";
 
 interface Message {
   id: string;
@@ -28,6 +30,13 @@ interface Contact {
   status?: string;
 }
 
+interface ProductInfo {
+  id: string | number;
+  name: string;
+  price: number;
+  image: string;
+}
+
 const Messages = () => {
   const { userProfile } = useUser();
   const { toast } = useToast();
@@ -35,7 +44,12 @@ const Messages = () => {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(
     location.state?.selectedContact || null
   );
-  const [messageInput, setMessageInput] = useState("");
+  const [productInfo, setProductInfo] = useState<ProductInfo | null>(
+    location.state?.productInfo || null
+  );
+  const [messageInput, setMessageInput] = useState(
+    productInfo ? `Hi, I'm interested in your ${productInfo.name} listed for ${formatCurrency(productInfo.price)}. Is it still available?` : ""
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -138,7 +152,10 @@ const Messages = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => setSelectedContact(null)}
+                onClick={() => {
+                  setSelectedContact(null);
+                  setProductInfo(null);
+                }}
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -155,7 +172,15 @@ const Messages = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleCall(selectedContact)}
+                onClick={() => {
+                  if (selectedContact.phoneNumber) {
+                    window.location.href = `tel:${selectedContact.phoneNumber}`;
+                    toast({
+                      title: "Initiating Call",
+                      description: `Calling ${selectedContact.name}...`,
+                    });
+                  }
+                }}
               >
                 <Phone className="h-5 w-5" />
               </Button>
@@ -168,10 +193,30 @@ const Messages = () => {
 
       {selectedContact ? (
         <>
+          {/* Product Info Card (if available) */}
+          {productInfo && (
+            <Card className="mx-4 mt-4 p-4">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-lg overflow-hidden">
+                  <img 
+                    src={productInfo.image} 
+                    alt={productInfo.name} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold">{productInfo.name}</h3>
+                  <p className="text-primary font-medium">{formatCurrency(productInfo.price)}</p>
+                </div>
+                <ShoppingBag className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </Card>
+          )}
+
           {/* Chat Messages */}
-          <ScrollArea className="h-[calc(100vh-8rem)] px-4">
+          <ScrollArea className="h-[calc(100vh-16rem)] px-4">
             <div className="space-y-4 py-4">
-              {filteredMessages.map((message) => (
+              {messages.map((message) => (
                 <div
                   key={message.id}
                   className={cn(
