@@ -16,13 +16,25 @@ const CommunityForum = () => {
   useEffect(() => {
     const savedPosts = localStorage.getItem(STORAGE_KEY);
     if (savedPosts) {
-      setPosts(JSON.parse(savedPosts));
+      // Ensure all posts have the required arrays initialized
+      const parsedPosts = JSON.parse(savedPosts).map((post: ForumPostType) => ({
+        ...post,
+        comments: post.comments || [],
+        likes: post.likes || [],
+      }));
+      setPosts(parsedPosts);
     }
   }, []);
 
   const savePosts = (newPosts: ForumPostType[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newPosts));
-    setPosts(newPosts);
+    // Ensure arrays are initialized before saving
+    const postsWithArrays = newPosts.map(post => ({
+      ...post,
+      comments: post.comments || [],
+      likes: post.likes || [],
+    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(postsWithArrays));
+    setPosts(postsWithArrays);
   };
 
   const handleCreatePost = (title: string, content: string) => {
@@ -32,8 +44,8 @@ const CommunityForum = () => {
       content,
       author: userProfile?.name || "Anonymous",
       createdAt: new Date().toISOString(),
-      comments: [],
-      likes: [],
+      comments: [], // Initialize empty arrays
+      likes: [], // Initialize empty arrays
     };
     savePosts([newPost, ...posts]);
     toast({
@@ -48,13 +60,13 @@ const CommunityForum = () => {
         return {
           ...post,
           comments: [
-            ...post.comments,
+            ...(post.comments || []),
             {
               id: Date.now().toString(),
               content,
               author: userProfile?.name || "Anonymous",
               createdAt: new Date().toISOString(),
-              likes: [],
+              likes: [], // Initialize empty array for new comments
             },
           ],
         };
@@ -76,9 +88,9 @@ const CommunityForum = () => {
 
     const updatedPosts = posts.map((post) => {
       if (post.id === postId) {
-        const likes = post.likes.includes(userProfile.id)
+        const likes = post.likes?.includes(userProfile.id)
           ? post.likes.filter((id) => id !== userProfile.id)
-          : [...post.likes, userProfile.id];
+          : [...(post.likes || []), userProfile.id];
         return { ...post, likes };
       }
       return post;
@@ -98,11 +110,11 @@ const CommunityForum = () => {
 
     const updatedPosts = posts.map((post) => {
       if (post.id === postId) {
-        const updatedComments = post.comments.map((comment) => {
+        const updatedComments = (post.comments || []).map((comment) => {
           if (comment.id === commentId) {
-            const likes = comment.likes.includes(userProfile.id)
+            const likes = comment.likes?.includes(userProfile.id)
               ? comment.likes.filter((id) => id !== userProfile.id)
-              : [...comment.likes, userProfile.id];
+              : [...(comment.likes || []), userProfile.id];
             return { ...comment, likes };
           }
           return comment;
