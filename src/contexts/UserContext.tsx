@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 
 export type UserType = "farmer" | "vendor";
 
@@ -32,7 +32,7 @@ const defaultProfile: UserProfile = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     const saved = localStorage.getItem("userProfile");
     return saved ? JSON.parse(saved) : defaultProfile;
@@ -40,6 +40,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const updateProfile = (newData: Partial<UserProfile>) => {
     setUserProfile((prev) => {
+      if (!prev) return prev;
       const updated = { ...prev, ...newData };
       localStorage.setItem("userProfile", JSON.stringify(updated));
       return updated;
