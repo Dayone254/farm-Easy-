@@ -42,30 +42,16 @@ const Messages = () => {
   const { toast } = useToast();
   const location = useLocation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(
-    location.state?.selectedContact || null
-  );
-  const [productInfo, setProductInfo] = useState<ProductInfo | null>(
-    location.state?.productInfo || null
-  );
-  const [messageInput, setMessageInput] = useState(
-    productInfo ? `Hi, I'm interested in your ${productInfo.name} listed for ${formatCurrency(productInfo.price)}. Is it still available?` : ""
-  );
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
+  const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
 
-  // Scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  // Initialize states from location and localStorage
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  // Load messages and contacts from localStorage on component mount
-  useEffect(() => {
+    // Load messages and contacts from localStorage
     const savedMessages = localStorage.getItem("messages");
     const savedContacts = localStorage.getItem("contacts");
     
@@ -82,13 +68,23 @@ const Messages = () => {
       setContacts(parsedContacts);
     }
 
-    // If we have a new contact from navigation state, add them to contacts
-    if (location.state?.selectedContact && !contacts.find(c => c.id === location.state.selectedContact.id)) {
+    // Handle location state for new contact and product info
+    if (location.state?.selectedContact) {
       const newContact = location.state.selectedContact;
-      setContacts(prev => [...prev, newContact]);
-      localStorage.setItem("contacts", JSON.stringify([...contacts, newContact]));
+      setSelectedContact(newContact);
+      
+      // Only add to contacts if not already present
+      if (!contacts.find(c => c.id === newContact.id)) {
+        setContacts(prev => [...prev, newContact]);
+      }
+
+      // Set product info if available
+      if (location.state.productInfo) {
+        setProductInfo(location.state.productInfo);
+        setMessageInput(`Hi, I'm interested in your ${location.state.productInfo.name} listed for ${formatCurrency(location.state.productInfo.price)}. Is it still available?`);
+      }
     }
-  }, []);
+  }, [location.state]); // Only run when location.state changes
 
   // Save messages to localStorage whenever they change
   useEffect(() => {
@@ -99,6 +95,15 @@ const Messages = () => {
   useEffect(() => {
     localStorage.setItem("contacts", JSON.stringify(contacts));
   }, [contacts]);
+
+  // Scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !selectedContact || !userProfile) return;
