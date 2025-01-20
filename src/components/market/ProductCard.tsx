@@ -27,12 +27,18 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  console.log("Current user ID:", userProfile?.id);
-  console.log("Product seller ID:", product.seller?.id);
-  console.log("Is owner check:", userProfile?.id === product.seller?.id);
-
   // Strict ownership check based on user profile ID
-  const isOwner = userProfile?.id === product.seller?.id;
+  const isOwner = Boolean(
+    userProfile?.id && 
+    product.seller?.id && 
+    String(userProfile.id) === String(product.seller.id)
+  );
+
+  console.log("Ownership check details:", {
+    userProfileId: userProfile?.id,
+    sellerProfileId: product.seller?.id,
+    isOwner
+  });
 
   const handleContactSeller = () => {
     if (!userProfile) {
@@ -69,7 +75,8 @@ const ProductCard = ({
           price: product.price,
           image: product.image
         }
-      }
+      },
+      replace: true // Use replace to prevent history stack issues
     });
   };
 
@@ -99,7 +106,6 @@ const ProductCard = ({
   };
 
   const handleRemoveProduct = () => {
-    // Strict ownership check before removing
     if (!isOwner) {
       toast({
         variant: "destructive",
@@ -111,7 +117,6 @@ const ProductCard = ({
   };
 
   const handleMarkAsSold = () => {
-    // Strict ownership check before marking as sold
     if (!isOwner) {
       toast({
         variant: "destructive",
