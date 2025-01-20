@@ -10,6 +10,7 @@ import MarketHeader from "@/components/market/MarketHeader";
 import { useUser } from "@/contexts/UserContext";
 
 const STORAGE_KEY = "marketplace_products";
+const CART_STORAGE_KEY = "cart_items";
 
 const Market = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -23,21 +24,25 @@ const Market = () => {
   const navigate = useNavigate();
   const { userProfile } = useUser();
 
-  // Load products from localStorage on component mount
+  // Load products and cart items from localStorage on component mount
   useEffect(() => {
     const savedProducts = localStorage.getItem(STORAGE_KEY);
     if (savedProducts) {
       setProducts(JSON.parse(savedProducts));
     }
+
+    const savedCartItems = localStorage.getItem(CART_STORAGE_KEY);
+    if (savedCartItems) {
+      setCartItems(JSON.parse(savedCartItems));
+    }
   }, []);
 
-  // Save products to localStorage whenever they change
+  // Save cart items to localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-  }, [products]);
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const handleAddProduct = (newProduct: any) => {
-    // Add seller information to the product
     const productWithSeller = {
       ...newProduct,
       seller: {
@@ -58,19 +63,21 @@ const Market = () => {
   };
 
   const handleAddToCart = (product: any) => {
-    if (product.seller.id === userProfile?.id) {
-      toast({
-        title: "Cannot add to cart",
-        description: "You cannot add your own products to the cart",
-        variant: "destructive",
-      });
-      return;
-    }
+    const cartItem = {
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      seller: {
+        id: product.seller.id,
+        name: product.seller.name
+      }
+    };
 
-    setCartItems(prev => [...prev, product]);
+    setCartItems(prev => [...prev, cartItem]);
     toast({
       description: "Product added to cart",
     });
+    setIsCartOpen(true); // Open cart drawer when item is added
   };
 
   const handleRemoveFromCart = (index: number) => {
