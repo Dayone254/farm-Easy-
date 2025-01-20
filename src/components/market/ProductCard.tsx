@@ -1,12 +1,12 @@
-import { MessageSquare, ShoppingCart, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/utils/currency";
+import ProductOwnerActions from "./ProductOwnerActions";
+import ProductBuyerActions from "./ProductBuyerActions";
 
 interface ProductCardProps {
   product: any;
@@ -27,12 +27,8 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Strict ownership check
-  const isOwner = Boolean(
-    userProfile?.id && 
-    product.seller?.id && 
-    userProfile.id === product.seller.id
-  );
+  // Strict ownership check - user must be logged in and be the product owner
+  const isOwner = userProfile?.id === product.seller?.id;
 
   const handleContactSeller = () => {
     if (!userProfile) {
@@ -40,15 +36,6 @@ const ProductCard = ({
         variant: "destructive",
         title: "Login Required",
         description: "Please login to message sellers.",
-      });
-      return;
-    }
-
-    // Prevent messaging yourself
-    if (isOwner) {
-      toast({
-        variant: "destructive",
-        description: "You cannot message yourself about your own product.",
       });
       return;
     }
@@ -83,15 +70,6 @@ const ProductCard = ({
       return;
     }
 
-    // Prevent adding own products to cart
-    if (isOwner) {
-      toast({
-        variant: "destructive",
-        description: "You cannot add your own products to cart.",
-      });
-      return;
-    }
-
     onAddToCart(product);
     toast({
       description: "Product added to cart successfully",
@@ -99,27 +77,18 @@ const ProductCard = ({
   };
 
   const handleRemoveProduct = () => {
-    if (!isOwner) {
-      toast({
-        variant: "destructive",
-        description: "You can only remove your own products.",
-      });
-      return;
-    }
-
     onRemove(product.id);
+    toast({
+      description: "Product removed from marketplace",
+    });
   };
 
   const handleMarkAsSold = () => {
-    if (!isOwner) {
-      toast({
-        variant: "destructive",
-        description: "You can only mark your own products as sold.",
-      });
-      return;
-    }
-
     onMarkAsSold(product.id);
+    toast({
+      title: "Product Marked as Sold",
+      description: "The product has been removed from the marketplace.",
+    });
   };
 
   return (
@@ -174,41 +143,15 @@ const ProductCard = ({
 
         <div className="pt-2 border-t">
           {isOwner ? (
-            <div className="flex gap-2">
-              <Button 
-                variant="destructive"
-                className="flex-1"
-                onClick={handleRemoveProduct}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Remove
-              </Button>
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={handleMarkAsSold}
-              >
-                Mark as Sold
-              </Button>
-            </div>
+            <ProductOwnerActions
+              onRemove={handleRemoveProduct}
+              onMarkAsSold={handleMarkAsSold}
+            />
           ) : (
-            <div className="flex gap-2">
-              <Button 
-                variant="outline"
-                className="flex-1"
-                onClick={handleContactSeller}
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Message
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Add to Cart
-              </Button>
-            </div>
+            <ProductBuyerActions
+              onMessage={handleContactSeller}
+              onAddToCart={handleAddToCart}
+            />
           )}
         </div>
       </div>
