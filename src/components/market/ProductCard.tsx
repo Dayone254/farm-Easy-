@@ -27,7 +27,7 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const isOwner = Boolean(userProfile?.id && product.seller?.id && userProfile.id === product.seller.id);
+  const isOwner = userProfile?.id === product.seller?.id;
 
   const handleContactSeller = () => {
     if (!userProfile) {
