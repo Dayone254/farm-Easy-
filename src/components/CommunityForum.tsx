@@ -16,7 +16,6 @@ const CommunityForum = () => {
   useEffect(() => {
     const savedPosts = localStorage.getItem(STORAGE_KEY);
     if (savedPosts) {
-      // Ensure all posts have the required arrays initialized
       const parsedPosts = JSON.parse(savedPosts).map((post: ForumPostType) => ({
         ...post,
         comments: post.comments || [],
@@ -27,7 +26,6 @@ const CommunityForum = () => {
   }, []);
 
   const savePosts = (newPosts: ForumPostType[]) => {
-    // Ensure arrays are initialized before saving
     const postsWithArrays = newPosts.map(post => ({
       ...post,
       comments: post.comments || [],
@@ -38,14 +36,23 @@ const CommunityForum = () => {
   };
 
   const handleCreatePost = (title: string, content: string) => {
+    if (!userProfile?.name) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create posts",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const newPost: ForumPostType = {
       id: Date.now().toString(),
       title,
       content,
-      author: userProfile?.name || "Anonymous",
+      author: userProfile.name,
       createdAt: new Date().toISOString(),
-      comments: [], // Initialize empty arrays
-      likes: [], // Initialize empty arrays
+      comments: [],
+      likes: [],
     };
     savePosts([newPost, ...posts]);
     toast({
@@ -55,6 +62,15 @@ const CommunityForum = () => {
   };
 
   const handleAddComment = (postId: string, content: string) => {
+    if (!userProfile?.name) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to comment",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const updatedPosts = posts.map((post) => {
       if (post.id === postId) {
         return {
@@ -64,9 +80,9 @@ const CommunityForum = () => {
             {
               id: Date.now().toString(),
               content,
-              author: userProfile?.name || "Anonymous",
+              author: userProfile.name,
               createdAt: new Date().toISOString(),
-              likes: [], // Initialize empty array for new comments
+              likes: [],
             },
           ],
         };
@@ -77,7 +93,7 @@ const CommunityForum = () => {
   };
 
   const handleToggleLike = (postId: string) => {
-    if (!userProfile?.id) {
+    if (!userProfile?.name) {
       toast({
         title: "Error",
         description: "You must be logged in to like posts",
@@ -88,9 +104,9 @@ const CommunityForum = () => {
 
     const updatedPosts = posts.map((post) => {
       if (post.id === postId) {
-        const likes = post.likes?.includes(userProfile.id)
-          ? post.likes.filter((id) => id !== userProfile.id)
-          : [...(post.likes || []), userProfile.id];
+        const likes = post.likes?.includes(userProfile.name)
+          ? post.likes.filter((id) => id !== userProfile.name)
+          : [...(post.likes || []), userProfile.name];
         return { ...post, likes };
       }
       return post;
@@ -99,7 +115,7 @@ const CommunityForum = () => {
   };
 
   const handleToggleCommentLike = (postId: string, commentId: string) => {
-    if (!userProfile?.id) {
+    if (!userProfile?.name) {
       toast({
         title: "Error",
         description: "You must be logged in to like comments",
@@ -112,9 +128,9 @@ const CommunityForum = () => {
       if (post.id === postId) {
         const updatedComments = (post.comments || []).map((comment) => {
           if (comment.id === commentId) {
-            const likes = comment.likes?.includes(userProfile.id)
-              ? comment.likes.filter((id) => id !== userProfile.id)
-              : [...(comment.likes || []), userProfile.id];
+            const likes = comment.likes?.includes(userProfile.name)
+              ? comment.likes.filter((id) => id !== userProfile.name)
+              : [...(comment.likes || []), userProfile.name];
             return { ...comment, likes };
           }
           return comment;
