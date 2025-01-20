@@ -69,6 +69,15 @@ const ProductCard = ({
       return;
     }
 
+    if (isOwner) {
+      toast({
+        variant: "destructive",
+        title: "Cannot add to cart",
+        description: "You cannot add your own products to the cart.",
+      });
+      return;
+    }
+
     onAddToCart(product);
     toast({
       description: "Product added to cart successfully",
@@ -77,7 +86,6 @@ const ProductCard = ({
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow relative animate-fade-up">
-      {/* Remove button - Only visible to product owner */}
       {isOwner && (
         <button
           onClick={() => onRemove(product.id)}
