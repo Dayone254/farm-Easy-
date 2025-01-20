@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/currency";
 
@@ -41,6 +41,7 @@ const Messages = () => {
   const { userProfile } = useUser();
   const { toast } = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
@@ -51,6 +52,8 @@ const Messages = () => {
 
   // Initialize states from location and localStorage
   useEffect(() => {
+    console.log("Location state changed:", location.state);
+    
     // Load messages and contacts from localStorage
     const savedMessages = localStorage.getItem("messages");
     const savedContacts = localStorage.getItem("contacts");
@@ -71,27 +74,34 @@ const Messages = () => {
     // Handle location state for new contact and product info
     if (location.state?.selectedContact) {
       const newContact = location.state.selectedContact;
-      setSelectedContact(newContact);
       
-      // Only add to contacts if not already present
-      if (!contacts.find(c => c.id === newContact.id)) {
+      // Check if contact already exists
+      const existingContact = contacts.find(c => c.id === newContact.id);
+      
+      if (!existingContact) {
+        // Add new contact if it doesn't exist
         setContacts(prev => [...prev, newContact]);
       }
+      
+      // Set selected contact regardless if new or existing
+      setSelectedContact(newContact);
 
       // Set product info if available
       if (location.state.productInfo) {
         setProductInfo(location.state.productInfo);
         setMessageInput(`Hi, I'm interested in your ${location.state.productInfo.name} listed for ${formatCurrency(location.state.productInfo.price)}. Is it still available?`);
       }
-    }
-  }, [location.state]); // Only run when location.state changes
 
-  // Save messages to localStorage whenever they change
+      // Clear location state to prevent duplicate handling
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate]);
+
+  // Save messages and contacts to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("messages", JSON.stringify(messages));
   }, [messages]);
 
-  // Save contacts to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("contacts", JSON.stringify(contacts));
   }, [contacts]);
@@ -119,7 +129,7 @@ const Messages = () => {
     setMessages(prev => [...prev, newMessage]);
     
     // Update contact's last message
-    const updatedContacts = contacts.map(contact => {
+    setContacts(prev => prev.map(contact => {
       if (contact.id === selectedContact.id) {
         return {
           ...contact,
@@ -128,14 +138,17 @@ const Messages = () => {
         };
       }
       return contact;
-    });
-    setContacts(updatedContacts);
+    }));
 
     toast({
-      title: "Message Sent",
-      description: `Your message has been sent to ${selectedContact.name}`,
+      description: `Message sent to ${selectedContact.name}`,
     });
     setMessageInput("");
+    
+    // Clear product info after sending initial message
+    if (productInfo) {
+      setProductInfo(null);
+    }
   };
 
   const handleCall = (contact: Contact) => {
