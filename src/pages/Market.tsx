@@ -37,6 +37,11 @@ const Market = () => {
     }
   }, []);
 
+  // Save products to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+  }, [products]);
+
   // Save cart items to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
