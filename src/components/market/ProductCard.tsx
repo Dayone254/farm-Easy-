@@ -31,7 +31,7 @@ const ProductCard = ({
   const isOwner = Boolean(userProfile?.id && product.seller?.id === userProfile.id);
 
   const handleContactSeller = () => {
-    if (!userProfile?.id) {
+    if (!userProfile) {
       toast({
         variant: "destructive",
         title: "Login Required",
@@ -70,7 +70,7 @@ const ProductCard = ({
   };
 
   const handleAddToCart = () => {
-    if (!userProfile?.id) {
+    if (!userProfile) {
       toast({
         variant: "destructive",
         title: "Login Required",
