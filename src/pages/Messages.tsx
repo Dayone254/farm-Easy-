@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { MessageCircle, Phone, Search, ArrowLeft, ShoppingBag } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -41,6 +41,7 @@ const Messages = () => {
   const { userProfile } = useUser();
   const { toast } = useToast();
   const location = useLocation();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(
     location.state?.selectedContact || null
   );
@@ -53,6 +54,15 @@ const Messages = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
+
+  // Scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Load messages and contacts from localStorage on component mount
   useEffect(() => {
@@ -142,6 +152,8 @@ const Messages = () => {
     )
   );
 
+  const isCurrentUser = (senderId: string) => userProfile?.id === senderId;
+
   return (
     <div className="max-w-lg mx-auto bg-white min-h-screen relative">
       {/* Header */}
@@ -172,15 +184,7 @@ const Messages = () => {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => {
-                  if (selectedContact.phoneNumber) {
-                    window.location.href = `tel:${selectedContact.phoneNumber}`;
-                    toast({
-                      title: "Initiating Call",
-                      description: `Calling ${selectedContact.name}...`,
-                    });
-                  }
-                }}
+                onClick={() => handleCall(selectedContact)}
               >
                 <Phone className="h-5 w-5" />
               </Button>
@@ -216,23 +220,23 @@ const Messages = () => {
           {/* Chat Messages */}
           <ScrollArea className="h-[calc(100vh-16rem)] px-4">
             <div className="space-y-4 py-4">
-              {messages.map((message) => (
+              {filteredMessages.map((message) => (
                 <div
                   key={message.id}
                   className={cn(
                     "flex",
-                    message.senderId === userProfile?.id ? "justify-end" : "justify-start"
+                    isCurrentUser(message.senderId) ? "justify-end" : "justify-start"
                   )}
                 >
                   <div
                     className={cn(
                       "max-w-[70%] rounded-2xl p-3",
-                      message.senderId === userProfile?.id
+                      isCurrentUser(message.senderId)
                         ? "bg-primary text-primary-foreground"
-                        : "bg-gray-100"
+                        : "bg-muted"
                     )}
                   >
-                    <p>{message.content}</p>
+                    <p className="break-words">{message.content}</p>
                     <span className="text-xs opacity-70 mt-1 block">
                       {new Date(message.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -242,6 +246,7 @@ const Messages = () => {
                   </div>
                 </div>
               ))}
+              <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
 
@@ -249,7 +254,7 @@ const Messages = () => {
           <div className="sticky bottom-0 bg-white border-t p-4">
             <div className="flex gap-2">
               <Input
-                placeholder="Message..."
+                placeholder="Type a message..."
                 value={messageInput}
                 onChange={(e) => setMessageInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
@@ -257,6 +262,7 @@ const Messages = () => {
               />
               <Button 
                 onClick={handleSendMessage}
+                size="icon"
                 className="rounded-full"
               >
                 <MessageCircle className="h-5 w-5" />
@@ -272,7 +278,7 @@ const Messages = () => {
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search messages..."
-                className="pl-9 bg-gray-100"
+                className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -285,7 +291,7 @@ const Messages = () => {
               {filteredContacts.map((contact) => (
                 <div
                   key={contact.id}
-                  className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                  className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg cursor-pointer"
                   onClick={() => setSelectedContact(contact)}
                 >
                   <Avatar className="h-12 w-12">
@@ -297,7 +303,10 @@ const Messages = () => {
                       <p className="font-medium">{contact.name}</p>
                       {contact.lastMessageTime && (
                         <span className="text-xs text-muted-foreground">
-                          {contact.status}
+                          {new Date(contact.lastMessageTime).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
                         </span>
                       )}
                     </div>
