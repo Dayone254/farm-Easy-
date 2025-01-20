@@ -75,6 +75,7 @@ const Dashboard = () => {
           <CommunityForum />
         </div>
       </div>
+    );
   }
 
   return (
