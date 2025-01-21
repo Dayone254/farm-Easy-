@@ -1,36 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu, Calculator, UserCheck, MessageSquare, BellDot } from "lucide-react";
+import { CloudSun, Sprout, DollarSign, Package, LayoutDashboard, Menu, Calculator, UserCheck, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/UserContext";
 import { useQuery } from "@tanstack/react-query";
+import { fetchNotifications } from "@/utils/notificationsApi";
+import { useToast } from "@/hooks/use-toast";
 
 const Navigation = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { userProfile } = useUser();
+  const { toast } = useToast();
 
   // Fetch notifications using React Query
   const { data: notifications = { messages: 0, orders: 0 } } = useQuery({
     queryKey: ['notifications', userProfile?.id],
     queryFn: async () => {
-      console.log('Fetching notifications for user:', userProfile?.id);
-      // Simulate API call - replace with actual API endpoint
-      const response = await fetch(`/api/notifications/${userProfile?.id}`).catch(() => {
-        // Fallback data for demo purposes - remove this in production
-        console.log('Using fallback notification data');
-        return {
-          json: async () => ({
-            messages: Math.floor(Math.random() * 5),
-            orders: Math.floor(Math.random() * 3)
-          })
-        };
-      });
-      const data = await response.json();
-      console.log('Received notifications:', data);
-      return data;
+      if (!userProfile?.id) {
+        throw new Error('User ID is required');
+      }
+      return await fetchNotifications(userProfile.id);
     },
     enabled: !!userProfile?.id,
     refetchInterval: 30000, // Refetch every 30 seconds
+    onError: (error) => {
+      console.error('Error fetching notifications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch notifications",
+        variant: "destructive",
+      });
+    },
   });
 
   const navItems = [
