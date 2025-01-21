@@ -3,11 +3,12 @@ import { useToast } from "@/hooks/use-toast";
 import ProductCard from "./market/ProductCard";
 import SellerDialog from "./market/SellerDialog";
 import { useUser } from "@/contexts/UserContext";
+import { Product } from "@/types/market";
 
 interface MarketplaceProps {
-  products: any[];
-  setProducts: (products: any[]) => void;
-  onAddToCart: (product: any) => void;
+  products: Product[];
+  setProducts: (products: Product[]) => void;
+  onAddToCart: (product: Product) => void;
 }
 
 const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) => {
@@ -15,10 +16,19 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
   const { toast } = useToast();
   const { userProfile } = useUser();
 
-  const handleAddToCart = (product: any) => {
-    const currentUserId = String(userProfile?.id || '');
-    const sellerId = String(product.seller?.id || '');
-    const isOwner = Boolean(currentUserId && sellerId && currentUserId === sellerId);
+  const handleAddToCart = (product: Product) => {
+    if (!userProfile?.id || !product.seller?.id) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to add items to cart.",
+      });
+      return;
+    }
+
+    const currentUserId = String(userProfile.id);
+    const sellerId = String(product.seller.id);
+    const isOwner = currentUserId === sellerId;
     
     console.log("Marketplace - Add to Cart Check:", {
       component: "Marketplace",

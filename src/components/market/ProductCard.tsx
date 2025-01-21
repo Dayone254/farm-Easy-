@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -5,17 +6,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
 import { formatCurrency } from "@/utils/currency";
-import { useState } from "react";
+import { ProductCardProps } from "@/types/market";
 import ProductBuyerActions from "./ProductBuyerActions";
 import ProductOwnerActions from "./ProductOwnerActions";
-
-interface ProductCardProps {
-  product: any;
-  onRemove: (id: string | number) => void;
-  onMarkAsSold: (id: string | number) => void;
-  onSellerClick: (seller: any) => void;
-  onAddToCart: (product: any) => void;
-}
 
 const ProductCard = ({ 
   product, 
@@ -28,21 +21,29 @@ const ProductCard = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
-  // Convert IDs to strings and ensure they exist
-  const currentUserId = String(userProfile?.id || '');
-  const sellerId = String(product.seller?.id || '');
-  const isOwner = Boolean(currentUserId && sellerId && currentUserId === sellerId);
+  useEffect(() => {
+    if (!userProfile?.id || !product.seller?.id) {
+      setIsOwner(false);
+      return;
+    }
 
-  console.log("ProductCard - Ownership Check:", {
-    component: "ProductCard",
-    productId: product.id,
-    productName: product.name,
-    sellerId,
-    currentUserId,
-    isOwner,
-    userProfile
-  });
+    const currentUserId = String(userProfile.id);
+    const sellerId = String(product.seller.id);
+    
+    console.log("ProductCard - Ownership Check:", {
+      component: "ProductCard",
+      productId: product.id,
+      productName: product.name,
+      currentUserId,
+      sellerId,
+      isOwner: currentUserId === sellerId,
+      userProfile
+    });
+
+    setIsOwner(currentUserId === sellerId);
+  }, [userProfile, product.seller, product.id, product.name]);
 
   const handleContactSeller = () => {
     if (!userProfile) {
