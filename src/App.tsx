@@ -29,21 +29,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 20,
   },
   enter: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.3,
+      duration: 0.2,
       ease: "easeOut",
     },
   },
   exit: {
     opacity: 0,
-    y: -20,
     transition: {
-      duration: 0.2,
+      duration: 0.1,
       ease: "easeIn",
     },
   },
@@ -55,7 +52,7 @@ const AppRoutes = () => {
   return (
     <div className="min-h-screen bg-[#F5F5DC]">
       <Navigation />
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         <motion.main
           key={location.pathname}
           initial="initial"
