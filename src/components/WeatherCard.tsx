@@ -1,51 +1,43 @@
-import { Cloud, Sun, Moon, Wind, Droplets, MapPin, Clock, Calendar } from "lucide-react";
-import { format, addHours, addDays } from "date-fns";
+import { Cloud, Sun, Moon, Droplets, MapPin, Clock, Calendar, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { useWeatherData } from "@/utils/weatherApi";
+import { useToast } from "@/hooks/use-toast";
 
 interface WeatherCardProps {
   showHourly?: boolean;
 }
 
 const WeatherCard = ({ showHourly = false }: WeatherCardProps) => {
-  const currentDate = new Date();
-  const location = "Nairobi, Kenya";
-  const currentTemp = 24;
-  const condition = "Clear";
-  const feelsLike = 22;
-  const highTemp = 28;
-  const lowTemp = 18;
+  const { data: weather, isLoading, error } = useWeatherData(showHourly);
+  const { toast } = useToast();
+  const location = "Nairobi, Kenya"; // This could be made dynamic based on user's location
 
-  // Generate hourly data for the temperature graph
-  const hourlyData = Array.from({ length: 24 }, (_, i) => {
-    const hour = addHours(currentDate, i);
-    return {
-      time: format(hour, 'HH:mm'),
-      temp: Math.floor(18 + Math.random() * 10),
-      icon: i >= 6 && i <= 18 ? "Sun" : "Moon",
-      humidity: Math.floor(60 + Math.random() * 20),
-    };
-  });
+  if (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to fetch weather data. Please try again later.",
+    });
+  }
 
-  // Generate weekly data for the temperature graph
-  const weeklyData = Array.from({ length: 7 }, (_, i) => {
-    const date = addDays(currentDate, i);
-    return {
-      day: format(date, 'EEE'),
-      temp: Math.floor(20 + Math.random() * 8),
-      icon: ["Sun", "Cloud", "Moon"][Math.floor(Math.random() * 3)],
-      high: Math.floor(24 + Math.random() * 6),
-      low: Math.floor(16 + Math.random() * 4),
-    };
-  });
+  if (isLoading || !weather) {
+    return (
+      <Card className="w-full bg-primary/95 text-cream p-6 rounded-xl">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-cream" />
+        </div>
+      </Card>
+    );
+  }
 
   // Generate chart data based on view type
   const chartData = showHourly 
-    ? hourlyData.map(hour => ({
+    ? weather.hourly.map(hour => ({
         name: hour.time,
         temperature: hour.temp,
       }))
-    : weeklyData.map(day => ({
+    : weather.daily.map(day => ({
         name: day.day,
         temperature: day.temp,
       }));
@@ -56,25 +48,29 @@ const WeatherCard = ({ showHourly = false }: WeatherCardProps) => {
         {/* Current Weather Section */}
         <div className="flex justify-between items-start">
           <div>
-            <div className="text-6xl font-light mb-2 text-cream">{currentTemp}°</div>
+            <div className="text-6xl font-light mb-2 text-cream">{weather.current.temp}°</div>
             <div className="flex items-center gap-2 text-cream/80">
               <MapPin className="h-4 w-4" />
               <span>{location}</span>
             </div>
-            <div className="mt-1 text-cream/80">{condition}</div>
+            <div className="mt-1 text-cream/80">{weather.current.condition}</div>
             <div className="text-sm text-cream/70 mt-1">
-              Feels like {feelsLike}°
+              Feels like {weather.current.feels_like}°
             </div>
           </div>
           <div className="text-right">
-            <Moon className="h-16 w-16 text-cream mb-2" />
+            {weather.current.condition.includes("Night") ? (
+              <Moon className="h-16 w-16 text-cream mb-2" />
+            ) : (
+              <Sun className="h-16 w-16 text-cream mb-2" />
+            )}
             <div className="text-sm text-cream/80">
-              H: {highTemp}° L: {lowTemp}°
+              H: {weather.current.high}° L: {weather.current.low}°
             </div>
           </div>
         </div>
 
-        {/* Hourly Forecast Section */}
+        {/* Hourly/Daily Forecast Section */}
         {showHourly ? (
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-cream/80">
@@ -82,16 +78,16 @@ const WeatherCard = ({ showHourly = false }: WeatherCardProps) => {
               <h3 className="font-medium">Hourly Forecast</h3>
             </div>
             <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
-              {hourlyData.slice(0, 8).map((hour, index) => (
+              {weather.hourly.slice(0, 8).map((hour, index) => (
                 <div
                   key={index}
                   className="bg-secondary/30 rounded-lg p-3 text-center hover:bg-secondary/40 transition-colors"
                 >
                   <div className="text-sm font-medium mb-2">{hour.time}</div>
-                  {hour.icon === "Sun" ? (
-                    <Sun className="h-6 w-6 mx-auto mb-2 text-cream" />
-                  ) : (
+                  {hour.condition.includes("Night") ? (
                     <Moon className="h-6 w-6 mx-auto mb-2 text-cream" />
+                  ) : (
+                    <Sun className="h-6 w-6 mx-auto mb-2 text-cream" />
                   )}
                   <div className="text-lg font-semibold mb-1">{hour.temp}°</div>
                   <div className="flex items-center justify-center gap-1 text-xs text-cream/70">
@@ -103,25 +99,24 @@ const WeatherCard = ({ showHourly = false }: WeatherCardProps) => {
             </div>
           </div>
         ) : (
-          /* Weekly Forecast Section */
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-cream/80">
               <Calendar className="h-4 w-4" />
               <h3 className="font-medium">Weekly Forecast</h3>
             </div>
             <div className="grid grid-cols-7 gap-4">
-              {weeklyData.map((day, index) => (
+              {weather.daily.map((day, index) => (
                 <div
                   key={index}
                   className="bg-secondary/30 rounded-lg p-3 text-center hover:bg-secondary/40 transition-colors"
                 >
                   <div className="text-sm font-medium mb-2">{day.day}</div>
-                  {day.icon === "Sun" ? (
-                    <Sun className="h-6 w-6 mx-auto mb-2 text-cream" />
-                  ) : day.icon === "Cloud" ? (
+                  {day.condition === "Cloudy" ? (
                     <Cloud className="h-6 w-6 mx-auto mb-2 text-cream" />
-                  ) : (
+                  ) : day.condition.includes("Night") ? (
                     <Moon className="h-6 w-6 mx-auto mb-2 text-cream" />
+                  ) : (
+                    <Sun className="h-6 w-6 mx-auto mb-2 text-cream" />
                   )}
                   <div className="text-lg font-semibold mb-1">{day.temp}°</div>
                   <div className="flex flex-col items-center text-xs text-cream/70">
