@@ -103,7 +103,7 @@ const Profile = () => {
           )}
         </div>
         <p className="text-gray-600">
-          {userProfile?.userType === "farmer" ? "Farmer" : "Vendor"}
+          {userProfile?.userType.charAt(0).toUpperCase() + userProfile?.userType.slice(1)}
         </p>
       </div>
       
