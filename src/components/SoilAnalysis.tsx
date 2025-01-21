@@ -16,7 +16,7 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
 
   // Calculate moisture based on soil type and drainage
   const calculateMoisture = () => {
-    if (!farmDetails?.soil) return data.moisture;
+    if (!farmDetails?.soil?.drainage || !farmDetails?.soil?.type) return data.moisture;
     
     const drainageFactors: Record<string, number> = {
       poor: 85,
@@ -45,7 +45,7 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
 
   // Calculate pH based on soil type
   const calculatePH = () => {
-    if (!farmDetails?.soil) return data.ph;
+    if (!farmDetails?.soil?.type) return data.ph;
     
     const soilTypePH: Record<string, number> = {
       clay: 6.5,
@@ -116,11 +116,11 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div>
             <span className="text-sm text-gray-600">Soil Type</span>
-            <p className="font-medium">{farmDetails?.soil?.type || "Not specified"}</p>
+            <p className="font-medium capitalize">{farmDetails?.soil?.type || "Not specified"}</p>
           </div>
           <div>
             <span className="text-sm text-gray-600">Drainage</span>
-            <p className="font-medium">{farmDetails?.soil?.drainage || "Not specified"}</p>
+            <p className="font-medium capitalize">{farmDetails?.soil?.drainage || "Not specified"}</p>
           </div>
         </div>
 

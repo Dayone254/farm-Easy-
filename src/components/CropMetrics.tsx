@@ -13,7 +13,7 @@ const CropMetrics = ({ data }: { data: CropData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const calculateNutrients = () => {
-    if (!farmDetails?.soil) return data;
+    if (!farmDetails?.soil?.organicMatter || !farmDetails?.soil?.type) return data;
 
     const organicMatter = parseFloat(farmDetails.soil.organicMatter) || 0;
     const soilQualityScore = organicMatter * 20; // Convert to percentage
