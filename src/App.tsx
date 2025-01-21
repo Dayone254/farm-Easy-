@@ -29,24 +29,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const pageVariants = {
   initial: {
     opacity: 0,
-    style: {
-      position: "absolute",
-      width: "100%",
-    }
   },
   enter: {
     opacity: 1,
-    style: {
-      position: "absolute",
-      width: "100%",
-    }
   },
   exit: {
     opacity: 0,
-    style: {
-      position: "absolute",
-      width: "100%",
-    }
   },
 };
 
@@ -70,7 +58,7 @@ const AppRoutes = () => {
           exit="exit"
           variants={pageVariants}
           transition={pageTransition}
-          className="pt-20 px-4"
+          className="pt-20 px-4 absolute w-full"
         >
           <Routes location={location}>
             <Route path="/login" element={<Login />} />
