@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 
-export type UserType = "farmer" | "vendor";
+export type UserType = "farmer" | "vendor" | "buyer";
 
 interface UserProfile {
   id: string;
@@ -27,7 +27,7 @@ const defaultProfile: UserProfile = {
   isVerified: false,
   profileImage: null,
   bio: "",
-  userType: "farmer",
+  userType: "buyer",  // Changed default to buyer
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);

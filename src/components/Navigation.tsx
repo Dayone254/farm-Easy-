@@ -23,26 +23,28 @@ const Navigation = () => {
     },
     enabled: !!userProfile?.id,
     refetchInterval: 30000, // Refetch every 30 seconds
-    onError: (error) => {
-      console.error('Error fetching notifications:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch notifications",
-        variant: "destructive",
-      });
+    meta: {
+      onError: (error: Error) => {
+        console.error('Error fetching notifications:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch notifications",
+          variant: "destructive",
+        });
+      },
     },
   });
 
   const navItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/", showFor: ["farmer", "vendor"] },
+    { icon: LayoutDashboard, label: "Dashboard", path: "/", showFor: ["farmer", "vendor", "buyer"] },
     { icon: CloudSun, label: "Weather", path: "/weather", showFor: ["farmer"] },
     { icon: Sprout, label: "Crops", path: "/crops", showFor: ["farmer"] },
-    { icon: DollarSign, label: "Market", path: "/market", showFor: ["farmer", "vendor"] },
+    { icon: DollarSign, label: "Market", path: "/market", showFor: ["farmer", "vendor", "buyer"] },
     { 
       icon: Package, 
       label: "Orders", 
       path: "/orders", 
-      showFor: ["farmer", "vendor"],
+      showFor: ["farmer", "vendor", "buyer"],
       notifications: notifications.orders 
     },
     { icon: Calculator, label: "Financing", path: "/financing", showFor: ["farmer", "vendor"] },
@@ -50,14 +52,14 @@ const Navigation = () => {
       icon: MessageSquare, 
       label: "Messages", 
       path: "/messages", 
-      showFor: ["farmer", "vendor"],
+      showFor: ["farmer", "vendor", "buyer"],
       notifications: notifications.messages
     },
-    { icon: UserCheck, label: "Profile", path: "/profile", showFor: ["farmer", "vendor"] },
+    { icon: UserCheck, label: "Profile", path: "/profile", showFor: ["farmer", "vendor", "buyer"] },
   ];
 
   const filteredNavItems = navItems.filter(item => 
-    item.showFor.includes(userProfile?.userType || "farmer")
+    item.showFor.includes(userProfile?.userType || "buyer")
   );
 
   return (

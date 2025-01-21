@@ -12,7 +12,7 @@ import type { UserType } from "@/contexts/UserContext";
 const Login = () => {
   const navigate = useNavigate();
   const { updateProfile } = useUser();
-  const [userType, setUserType] = useState<UserType>("farmer");
+  const [userType, setUserType] = useState<UserType>("buyer");
   const [name, setName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
 
@@ -57,8 +57,12 @@ const Login = () => {
             <RadioGroup
               value={userType}
               onValueChange={(value: UserType) => setUserType(value)}
-              className="flex gap-4"
+              className="flex flex-wrap gap-4"
             >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="buyer" id="buyer" />
+                <Label htmlFor="buyer">Buyer</Label>
+              </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="farmer" id="farmer" />
                 <Label htmlFor="farmer">Farmer</Label>
