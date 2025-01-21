@@ -34,11 +34,12 @@ const ProductCard = ({
   const sellerId = String(product.seller?.id || '');
   const isOwner = currentUserId === sellerId && currentUserId !== '';
 
-  console.log("Product Card Render:", {
+  console.log("Product Card - User Check:", {
     productId: product.id,
     sellerId,
     currentUserId,
-    isOwner
+    isOwner,
+    userProfile
   });
 
   const handleContactSeller = () => {

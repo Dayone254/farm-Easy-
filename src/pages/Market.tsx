@@ -72,11 +72,11 @@ const Market = () => {
     const currentUserId = String(userProfile?.id || '');
     const sellerId = String(product.seller?.id || '');
     
-    console.log("Add to Cart Attempt:", {
-      productId: product.id,
-      sellerId,
+    console.log("Market Page - Add to Cart Check:", {
       currentUserId,
-      isOwner: currentUserId === sellerId
+      sellerId,
+      isOwner: currentUserId === sellerId,
+      userProfile
     });
 
     if (!userProfile) {

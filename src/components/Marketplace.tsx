@@ -20,6 +20,13 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
     const currentUserId = String(userProfile?.id || '');
     const sellerId = String(product.seller?.id || '');
     
+    console.log("Marketplace - Add to Cart Check:", {
+      currentUserId,
+      sellerId,
+      isOwner: currentUserId === sellerId,
+      userProfile
+    });
+    
     if (currentUserId === sellerId) {
       toast({
         variant: "destructive",
