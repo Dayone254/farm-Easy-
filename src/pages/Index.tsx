@@ -4,6 +4,7 @@ import MarketPrices from "../components/MarketPrices";
 import CommunityForum from "../components/CommunityForum";
 import OrdersTable from "../components/OrdersTable";
 import Marketplace from "../components/Marketplace";
+import MarketUpdates from "../components/MarketUpdates";
 import { useState } from "react";
 
 const Index = () => {
@@ -54,7 +55,7 @@ const Index = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 fade-in">
           <MarketPrices />
-          <CommunityForum />
+          <MarketUpdates />
         </div>
 
         <div className="fade-in">
