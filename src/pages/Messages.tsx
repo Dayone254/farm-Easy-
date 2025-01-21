@@ -1,176 +1,99 @@
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
-import { MessageCircle, Phone, Search, ArrowLeft, ShoppingBag } from "lucide-react";
+import { MessageCircle, Search, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
-import { formatCurrency } from "@/utils/currency";
-
-interface Message {
-  id: string;
-  senderId: string;
-  receiverId: string;
-  content: string;
-  timestamp: Date;
-}
-
-interface Contact {
-  id: string;
-  name: string;
-  userType: string;
-  profileImage: string | null;
-  lastMessage?: string;
-  lastMessageTime?: Date;
-  phoneNumber: string;
-  status?: string;
-}
-
-interface ProductInfo {
-  id: string | number;
-  name: string;
-  price: number;
-  image: string;
-}
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchMessages, sendMessage, markMessageAsRead, Message } from "@/utils/messagesApi";
+import { formatDistanceToNow } from "date-fns";
 
 const Messages = () => {
   const { userProfile } = useUser();
   const { toast } = useToast();
-  const location = useLocation();
-  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
-  const [productInfo, setProductInfo] = useState<ProductInfo | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
 
-  // Initialize states from location and localStorage
-  useEffect(() => {
-    console.log("Location state changed:", location.state);
-    
-    // Load messages and contacts from localStorage
-    const savedMessages = localStorage.getItem("messages");
-    const savedContacts = localStorage.getItem("contacts");
-    
-    if (savedMessages) {
-      const parsedMessages = JSON.parse(savedMessages);
-      setMessages(parsedMessages.map((msg: any) => ({
-        ...msg,
-        timestamp: new Date(msg.timestamp)
-      })));
-    }
-    
-    if (savedContacts) {
-      const parsedContacts = JSON.parse(savedContacts);
-      setContacts(parsedContacts);
-    }
+  // Fetch messages
+  const { data: messages = [] } = useQuery({
+    queryKey: ['messages', userProfile?.id],
+    queryFn: () => fetchMessages(userProfile?.id || ''),
+    enabled: !!userProfile?.id,
+    refetchInterval: 5000, // Refetch every 5 seconds
+  });
 
-    // Handle location state for new contact and product info
-    if (location.state?.selectedContact) {
-      const newContact = location.state.selectedContact;
-      
-      // Check if contact already exists
-      const existingContact = contacts.find(c => c.id === newContact.id);
-      
-      if (!existingContact) {
-        // Add new contact if it doesn't exist
-        setContacts(prev => [...prev, newContact]);
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: (content: string) => {
+      if (!userProfile?.id || !selectedContact?.id) {
+        throw new Error("Missing user information");
       }
-      
-      // Set selected contact regardless if new or existing
-      setSelectedContact(newContact);
+      return sendMessage(userProfile.id, selectedContact.id, content);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      setMessageInput("");
+      toast({
+        description: "Message sent successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        description: "Failed to send message",
+      });
+    },
+  });
 
-      // Set product info if available
-      if (location.state.productInfo) {
-        setProductInfo(location.state.productInfo);
-        setMessageInput(`Hi, I'm interested in your ${location.state.productInfo.name} listed for ${formatCurrency(location.state.productInfo.price)}. Is it still available?`);
-      }
+  // Mark message as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: markMessageAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+    },
+  });
 
-      // Clear location state to prevent duplicate handling
-      navigate(location.pathname, { replace: true });
-    }
-  }, [location.state, navigate]);
-
-  // Save messages and contacts to localStorage whenever they change
+  // Auto scroll to bottom when new messages arrive
   useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages]);
-
-  useEffect(() => {
-    localStorage.setItem("contacts", JSON.stringify(contacts));
-  }, [contacts]);
-
-  // Scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim() || !selectedContact || !userProfile) return;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      senderId: userProfile.id,
-      receiverId: selectedContact.id,
-      content: messageInput.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages(prev => [...prev, newMessage]);
-    
-    // Update contact's last message
-    setContacts(prev => prev.map(contact => {
-      if (contact.id === selectedContact.id) {
-        return {
-          ...contact,
-          lastMessage: messageInput.trim(),
-          lastMessageTime: new Date(),
-        };
-      }
-      return contact;
-    }));
-
-    toast({
-      description: `Message sent to ${selectedContact.name}`,
-    });
-    setMessageInput("");
-    
-    // Clear product info after sending initial message
-    if (productInfo) {
-      setProductInfo(null);
-    }
-  };
-
-  const handleCall = (contact: Contact) => {
-    window.location.href = `tel:${contact.phoneNumber}`;
-    toast({
-      title: "Initiating Call",
-      description: `Calling ${contact.name}...`,
-    });
-  };
-
-  const filteredContacts = contacts.filter(contact =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+  // Filter messages for selected contact
+  const filteredMessages = messages.filter(
+    (message: Message) =>
+      selectedContact &&
+      ((message.senderId === userProfile?.id && message.receiverId === selectedContact.id) ||
+        (message.receiverId === userProfile?.id && message.senderId === selectedContact.id))
   );
 
-  const filteredMessages = messages.filter(message =>
-    selectedContact && (
-      (message.senderId === userProfile?.id && message.receiverId === selectedContact.id) ||
-      (message.receiverId === userProfile?.id && message.senderId === selectedContact.id)
+  // Get unique contacts from messages
+  const contacts = Array.from(
+    new Set(
+      messages
+        .map((message: Message) =>
+          message.senderId === userProfile?.id
+            ? message.receiverId
+            : message.senderId
+        )
     )
   );
 
-  const isCurrentUser = (senderId: string) => userProfile?.id === senderId;
+  // Filter contacts based on search
+  const filteredContacts = contacts.filter((contactId) =>
+    contacts.some((contact) =>
+      contact.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+
+  const handleSendMessage = () => {
+    if (!messageInput.trim()) return;
+    sendMessageMutation.mutate(messageInput);
+  };
 
   return (
     <div className="max-w-lg mx-auto bg-white min-h-screen relative">
@@ -182,10 +105,7 @@ const Messages = () => {
               <Button 
                 variant="ghost" 
                 size="icon"
-                onClick={() => {
-                  setSelectedContact(null);
-                  setProductInfo(null);
-                }}
+                onClick={() => setSelectedContact(null)}
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
@@ -194,18 +114,9 @@ const Messages = () => {
                   <AvatarImage src={selectedContact.profileImage || undefined} />
                   <AvatarFallback>{selectedContact.name[0]}</AvatarFallback>
                 </Avatar>
-                <div className="text-sm">
-                  <p className="font-semibold">{selectedContact.name}</p>
-                  <p className="text-xs text-muted-foreground">{selectedContact.status}</p>
-                </div>
+                <span className="font-semibold">{selectedContact.name}</span>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => handleCall(selectedContact)}
-              >
-                <Phone className="h-5 w-5" />
-              </Button>
+              <div className="w-10" /> {/* Spacer for alignment */}
             </>
           ) : (
             <h1 className="text-xl font-semibold">Messages</h1>
@@ -215,55 +126,31 @@ const Messages = () => {
 
       {selectedContact ? (
         <>
-          {/* Product Info Card (if available) */}
-          {productInfo && (
-            <Card className="mx-4 mt-4 p-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-lg overflow-hidden">
-                  <img 
-                    src={productInfo.image} 
-                    alt={productInfo.name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">{productInfo.name}</h3>
-                  <p className="text-primary font-medium">{formatCurrency(productInfo.price)}</p>
-                </div>
-                <ShoppingBag className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </Card>
-          )}
-
           {/* Chat Messages */}
           <ScrollArea className="h-[calc(100vh-16rem)] px-4">
             <div className="space-y-4 py-4">
-              {filteredMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    "flex",
-                    isCurrentUser(message.senderId) ? "justify-end" : "justify-start"
-                  )}
-                >
+              {filteredMessages.map((message: Message) => {
+                const isCurrentUser = message.senderId === userProfile?.id;
+                return (
                   <div
-                    className={cn(
-                      "max-w-[70%] rounded-2xl p-3",
-                      isCurrentUser(message.senderId)
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    )}
+                    key={message.id}
+                    className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
                   >
-                    <p className="break-words">{message.content}</p>
-                    <span className="text-xs opacity-70 mt-1 block">
-                      {new Date(message.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit"
-                      })}
-                    </span>
+                    <div
+                      className={`max-w-[70%] rounded-2xl p-3 ${
+                        isCurrentUser
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <p className="break-words">{message.content}</p>
+                      <span className="text-xs opacity-70 mt-1 block">
+                        {formatDistanceToNow(new Date(message.timestamp))} ago
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
@@ -306,33 +193,25 @@ const Messages = () => {
           {/* Contacts List */}
           <ScrollArea className="h-[calc(100vh-8rem)]">
             <div className="space-y-2 p-4">
-              {filteredContacts.map((contact) => (
+              {filteredContacts.map((contactId) => (
                 <div
-                  key={contact.id}
+                  key={contactId}
                   className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg cursor-pointer"
-                  onClick={() => setSelectedContact(contact)}
+                  onClick={() => setSelectedContact({ id: contactId, name: contactId })}
                 >
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={contact.profileImage || undefined} />
-                    <AvatarFallback>{contact.name[0]}</AvatarFallback>
+                    <AvatarFallback>{contactId[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium">{contact.name}</p>
-                      {contact.lastMessageTime && (
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(contact.lastMessageTime).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit"
-                          })}
-                        </span>
-                      )}
-                    </div>
-                    {contact.lastMessage && (
-                      <p className="text-sm text-muted-foreground truncate">
-                        {contact.lastMessage}
-                      </p>
-                    )}
+                    <p className="font-medium">{contactId}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {messages
+                        .filter(
+                          (m: Message) =>
+                            m.senderId === contactId || m.receiverId === contactId
+                        )
+                        .slice(-1)[0]?.content || "No messages yet"}
+                    </p>
                   </div>
                 </div>
               ))}
