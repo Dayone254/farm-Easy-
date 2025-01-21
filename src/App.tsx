@@ -29,18 +29,24 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const pageVariants = {
   initial: {
     opacity: 0,
-    position: "absolute",
-    width: "100%",
+    style: {
+      position: "absolute",
+      width: "100%",
+    }
   },
   enter: {
     opacity: 1,
-    position: "absolute",
-    width: "100%",
+    style: {
+      position: "absolute",
+      width: "100%",
+    }
   },
   exit: {
     opacity: 0,
-    position: "absolute",
-    width: "100%",
+    style: {
+      position: "absolute",
+      width: "100%",
+    }
   },
 };
 
