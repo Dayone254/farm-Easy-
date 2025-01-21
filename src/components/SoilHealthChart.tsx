@@ -1,25 +1,42 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useFarmStore } from "@/stores/farmStore";
 
-// Simulated historical data
-const generateHistoricalData = () => {
+const generateHistoricalData = (farmDetails: any) => {
   const data = [];
   const now = new Date();
+  
+  // Base values from farm details
+  const baseMoisture = farmDetails?.soil?.drainage === 'poor' ? 80 : 
+                      farmDetails?.soil?.drainage === 'moderate' ? 65 : 50;
+  
+  const baseTemp = 25; // Base temperature
+  const basePH = farmDetails?.soil?.type === 'clay' ? 6.5 :
+                 farmDetails?.soil?.type === 'sandy' ? 6.0 :
+                 farmDetails?.soil?.type === 'loam' ? 6.8 : 6.5;
+
+  // Generate data points with slight variations
   for (let i = 6; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
+    
+    // Add random variations to base values
+    const variation = Math.random() * 10 - 5; // Random number between -5 and 5
+    
     data.push({
       date: date.toLocaleDateString(),
-      moisture: Math.floor(Math.random() * (80 - 60) + 60),
-      temperature: Math.floor(Math.random() * (30 - 20) + 20),
-      ph: Number((Math.random() * (7.5 - 6.0) + 6.0).toFixed(1))
+      moisture: Math.max(0, Math.min(100, baseMoisture + variation)),
+      temperature: baseTemp + (Math.random() * 4 - 2), // Vary by ±2°C
+      ph: Number((basePH + (Math.random() * 0.4 - 0.2)).toFixed(1)) // Vary by ±0.2
     });
   }
+  
   return data;
 };
 
 const SoilHealthChart = ({ data: currentData }: { data: any }) => {
-  const historicalData = generateHistoricalData();
+  const farmDetails = useFarmStore((state) => state.farmDetails);
+  const historicalData = generateHistoricalData(farmDetails);
   
   // Add current data point
   historicalData.push({
