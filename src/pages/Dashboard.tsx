@@ -12,6 +12,7 @@ import WeatherCard from "@/components/WeatherCard";
 const Dashboard = () => {
   const { userProfile } = useUser();
   const isVendor = userProfile?.userType === 'vendor';
+  const isBuyer = userProfile?.userType === 'buyer';
 
   if (isVendor) {
     return (
@@ -68,6 +69,68 @@ const Dashboard = () => {
             </div>
           </div>
         </Card>
+
+        {/* Community Forum Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-primary">Community Insights</h2>
+          <CommunityForum />
+        </div>
+      </div>
+    );
+  }
+
+  if (isBuyer) {
+    return (
+      <div className="container mx-auto py-6 space-y-6">
+        {/* Market Prices and Weather Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <MarketPrices />
+          <WeatherCard showHourly={true} />
+        </div>
+
+        {/* Community and News Section */}
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-primary">Community & News</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Book className="w-6 h-6 text-primary" />
+                <h3 className="text-lg font-semibold">Market Updates</h3>
+              </div>
+              <ul className="space-y-2">
+                <li className="p-2 bg-background/50 rounded-lg">
+                  Latest Market Trends
+                </li>
+                <li className="p-2 bg-background/50 rounded-lg">
+                  Product Quality Guidelines
+                </li>
+                <li className="p-2 bg-background/50 rounded-lg">
+                  Seasonal Products Guide
+                </li>
+              </ul>
+            </Card>
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Newspaper className="w-6 h-6 text-primary" />
+                <h3 className="text-lg font-semibold">Latest News</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="p-2 bg-background/50 rounded-lg">
+                  <h4 className="font-medium">Market Trends</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Current market trends and price updates
+                  </p>
+                </div>
+                <div className="p-2 bg-background/50 rounded-lg">
+                  <h4 className="font-medium">Product Availability</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Seasonal product availability updates
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
 
         {/* Community Forum Section */}
         <div className="space-y-4">
