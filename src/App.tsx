@@ -32,18 +32,16 @@ const pageVariants = {
   },
   enter: {
     opacity: 1,
-    transition: {
-      duration: 0.2,
-      ease: "easeOut",
-    },
   },
   exit: {
     opacity: 0,
-    transition: {
-      duration: 0.1,
-      ease: "easeIn",
-    },
   },
+};
+
+const pageTransition = {
+  type: "tween",
+  ease: "linear",
+  duration: 0.15,
 };
 
 const AppRoutes = () => {
@@ -52,13 +50,14 @@ const AppRoutes = () => {
   return (
     <div className="min-h-screen bg-[#F5F5DC]">
       <Navigation />
-      <AnimatePresence mode="wait" initial={false}>
+      <AnimatePresence mode="sync" initial={false}>
         <motion.main
           key={location.pathname}
           initial="initial"
           animate="enter"
           exit="exit"
           variants={pageVariants}
+          transition={pageTransition}
           className="pt-20 px-4"
         >
           <Routes location={location}>
