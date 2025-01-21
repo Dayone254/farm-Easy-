@@ -29,12 +29,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const pageVariants = {
   initial: {
     opacity: 0,
+    position: "absolute",
+    width: "100%",
   },
   enter: {
     opacity: 1,
+    position: "absolute",
+    width: "100%",
   },
   exit: {
     opacity: 0,
+    position: "absolute",
+    width: "100%",
   },
 };
 
@@ -48,7 +54,7 @@ const AppRoutes = () => {
   const location = useLocation();
   
   return (
-    <div className="min-h-screen bg-[#F5F5DC]">
+    <div className="min-h-screen bg-[#F5F5DC] relative">
       <Navigation />
       <AnimatePresence mode="sync" initial={false}>
         <motion.main
@@ -81,7 +87,7 @@ const App = () => {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 5 * 60 * 1000,
         retry: 1,
       },
     },
