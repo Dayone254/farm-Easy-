@@ -15,6 +15,7 @@ import FinancialSummary from "@/components/FinancialSummary";
 import OrdersTable from "@/components/OrdersTable";
 import { useUser } from "@/contexts/UserContext";
 import { useOrders, useUpdateOrderStatus } from "@/utils/ordersApi";
+import { Order } from "@/types/orders";
 
 const Orders = () => {
   const { toast } = useToast();

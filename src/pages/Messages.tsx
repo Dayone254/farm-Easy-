@@ -7,8 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchMessages, sendMessage, markMessageAsRead, Message } from "@/utils/messagesApi";
+import { fetchMessages, sendMessage, markMessageAsRead } from "@/utils/messagesApi";
 import { formatDistanceToNow } from "date-fns";
+import { Contact, Message } from "@/types/messages";
 
 const Messages = () => {
   const { userProfile } = useUser();
@@ -29,11 +30,11 @@ const Messages = () => {
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: (content: string) => {
+    mutationFn: async (content: string) => {
       if (!userProfile?.id || !selectedContact?.id) {
         throw new Error("Missing user information");
       }
-      return sendMessage(userProfile.id, selectedContact.id, content);
+      return await sendMessage(userProfile.id, selectedContact.id, content);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
@@ -52,7 +53,9 @@ const Messages = () => {
 
   // Mark message as read mutation
   const markAsReadMutation = useMutation({
-    mutationFn: markMessageAsRead,
+    mutationFn: async (messageId: string) => {
+      await markMessageAsRead(messageId);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages'] });
     },
