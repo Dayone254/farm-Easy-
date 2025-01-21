@@ -68,14 +68,17 @@ const Market = () => {
   };
 
   const handleAddToCart = (product: any) => {
-    // Strict ownership check
     const currentUserId = String(userProfile?.id || '');
     const sellerId = String(product.seller?.id || '');
+    const isOwner = Boolean(currentUserId && sellerId && currentUserId === sellerId);
     
-    console.log("Market Page - Add to Cart Check:", {
+    console.log("Market Page - Add to Cart Final Check:", {
+      component: "Market",
+      productId: product.id,
+      productName: product.name,
       currentUserId,
       sellerId,
-      isOwner: currentUserId === sellerId,
+      isOwner,
       userProfile
     });
 
@@ -88,7 +91,7 @@ const Market = () => {
       return;
     }
 
-    if (currentUserId === sellerId) {
+    if (isOwner) {
       toast({
         variant: "destructive",
         title: "Invalid Action",

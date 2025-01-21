@@ -29,13 +29,15 @@ const ProductCard = ({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Convert IDs to strings for consistent comparison
+  // Convert IDs to strings and ensure they exist
   const currentUserId = String(userProfile?.id || '');
   const sellerId = String(product.seller?.id || '');
-  const isOwner = currentUserId === sellerId && currentUserId !== '';
+  const isOwner = Boolean(currentUserId && sellerId && currentUserId === sellerId);
 
-  console.log("Product Card - User Check:", {
+  console.log("ProductCard - Ownership Check:", {
+    component: "ProductCard",
     productId: product.id,
+    productName: product.name,
     sellerId,
     currentUserId,
     isOwner,
@@ -80,7 +82,6 @@ const ProductCard = ({
       return;
     }
 
-    // Triple-check ownership at component level
     if (isOwner) {
       toast({
         variant: "destructive",

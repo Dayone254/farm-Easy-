@@ -16,18 +16,21 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
   const { userProfile } = useUser();
 
   const handleAddToCart = (product: any) => {
-    // Double-check ownership at marketplace level
     const currentUserId = String(userProfile?.id || '');
     const sellerId = String(product.seller?.id || '');
+    const isOwner = Boolean(currentUserId && sellerId && currentUserId === sellerId);
     
     console.log("Marketplace - Add to Cart Check:", {
+      component: "Marketplace",
+      productId: product.id,
+      productName: product.name,
       currentUserId,
       sellerId,
-      isOwner: currentUserId === sellerId,
+      isOwner,
       userProfile
     });
     
-    if (currentUserId === sellerId) {
+    if (isOwner) {
       toast({
         variant: "destructive",
         title: "Invalid Action",
