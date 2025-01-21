@@ -68,6 +68,35 @@ const Market = () => {
   };
 
   const handleAddToCart = (product: any) => {
+    // Strict ownership check
+    const currentUserId = String(userProfile?.id || '');
+    const sellerId = String(product.seller?.id || '');
+    
+    console.log("Add to Cart Attempt:", {
+      productId: product.id,
+      sellerId,
+      currentUserId,
+      isOwner: currentUserId === sellerId
+    });
+
+    if (!userProfile) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to add items to cart.",
+      });
+      return;
+    }
+
+    if (currentUserId === sellerId) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Action",
+        description: "You cannot add your own products to cart.",
+      });
+      return;
+    }
+
     const cartItem = {
       id: product.id,
       name: product.name,

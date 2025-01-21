@@ -79,7 +79,7 @@ const ProductCard = ({
       return;
     }
 
-    // Prevent adding own products to cart
+    // Triple-check ownership at component level
     if (isOwner) {
       toast({
         variant: "destructive",
@@ -90,9 +90,6 @@ const ProductCard = ({
     }
 
     onAddToCart(product);
-    toast({
-      description: "Product added to cart successfully",
-    });
   };
 
   const handleRemoveProduct = async () => {

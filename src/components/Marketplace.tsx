@@ -15,32 +15,21 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
   const { toast } = useToast();
   const { userProfile } = useUser();
 
-  const handleMarkAsSold = (productId: string | number) => {
-    // Strict ownership check based on user profile ID
-    if (!userProfile?.id) {
+  const handleAddToCart = (product: any) => {
+    // Double-check ownership at marketplace level
+    const currentUserId = String(userProfile?.id || '');
+    const sellerId = String(product.seller?.id || '');
+    
+    if (currentUserId === sellerId) {
       toast({
         variant: "destructive",
-        title: "Login Required",
-        description: "Please login to manage your products.",
+        title: "Invalid Action",
+        description: "You cannot add your own products to cart.",
       });
       return;
     }
 
-    const product = products.find(p => p.id === productId);
-    if (!product || product.seller?.id !== userProfile.id) {
-      toast({
-        variant: "destructive",
-        title: "Unauthorized",
-        description: "You can only mark your own products as sold.",
-      });
-      return;
-    }
-
-    setProducts(products.filter(p => p.id !== productId));
-    toast({
-      title: "Success",
-      description: "Product has been marked as sold.",
-    });
+    onAddToCart(product);
   };
 
   const handleRemoveProduct = (productId: string | number) => {
@@ -70,6 +59,34 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
     });
   };
 
+  const handleMarkAsSold = (productId: string | number) => {
+    // Strict ownership check based on user profile ID
+    if (!userProfile?.id) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to manage your products.",
+      });
+      return;
+    }
+
+    const product = products.find(p => p.id === productId);
+    if (!product || product.seller?.id !== userProfile.id) {
+      toast({
+        variant: "destructive",
+        title: "Unauthorized",
+        description: "You can only mark your own products as sold.",
+      });
+      return;
+    }
+
+    setProducts(products.filter(p => p.id !== productId));
+    toast({
+      title: "Success",
+      description: "Product has been marked as sold.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       {products.length === 0 ? (
@@ -85,7 +102,7 @@ const Marketplace = ({ products, setProducts, onAddToCart }: MarketplaceProps) =
               onRemove={handleRemoveProduct}
               onMarkAsSold={handleMarkAsSold}
               onSellerClick={setSelectedSeller}
-              onAddToCart={onAddToCart}
+              onAddToCart={handleAddToCart}
             />
           ))}
         </div>
