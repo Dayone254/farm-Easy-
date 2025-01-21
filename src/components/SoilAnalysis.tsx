@@ -14,9 +14,10 @@ interface SoilData {
 const SoilAnalysis = ({ data }: { data: SoilData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
-  // Calculate moisture based on soil type and drainage
   const calculateMoisture = () => {
-    if (!farmDetails?.soil?.drainage || !farmDetails?.soil?.type) return data.moisture;
+    if (!farmDetails?.soil?.drainage || !farmDetails?.soil?.type) {
+      return data.moisture;
+    }
     
     const drainageFactors: Record<string, number> = {
       poor: 85,
@@ -38,14 +39,14 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
     return Math.round((drainageFactor + soilTypeFactor) / 2);
   };
 
-  // Calculate temperature based on current weather (using mock for now)
   const calculateTemperature = () => {
     return data.temperature;
   };
 
-  // Calculate pH based on soil type
   const calculatePH = () => {
-    if (!farmDetails?.soil?.type) return data.ph;
+    if (!farmDetails?.soil?.type) {
+      return data.ph;
+    }
     
     const soilTypePH: Record<string, number> = {
       clay: 6.5,

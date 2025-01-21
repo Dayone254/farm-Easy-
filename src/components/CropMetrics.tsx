@@ -13,12 +13,19 @@ const CropMetrics = ({ data }: { data: CropData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const calculateNutrients = () => {
-    if (!farmDetails?.soil?.organicMatter || !farmDetails?.soil?.type) return data;
+    // Add null checks for farmDetails and its properties
+    if (!farmDetails?.soil?.organicMatter || !farmDetails?.soil?.type) {
+      return {
+        nitrogen: data.nitrogen,
+        phosphorus: data.phosphorus,
+        potassium: data.potassium,
+        healthScore: data.healthScore
+      };
+    }
 
     const organicMatter = parseFloat(farmDetails.soil.organicMatter) || 0;
-    const soilQualityScore = organicMatter * 20; // Convert to percentage
+    const soilQualityScore = organicMatter * 20;
 
-    // Different soil types have different nutrient holding capacities
     const soilTypeMultipliers: Record<string, number> = {
       clay: 1.2,
       loam: 1.0,
@@ -30,7 +37,6 @@ const CropMetrics = ({ data }: { data: CropData }) => {
     const soilType = farmDetails.soil.type.toLowerCase();
     const soilMultiplier = soilTypeMultipliers[soilType] || 1.0;
 
-    // Calculate individual nutrient levels
     const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
     const phosphorus = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.6));
     const potassium = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.7));
