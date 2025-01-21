@@ -13,7 +13,7 @@ const CropMetrics = ({ data }: { data: CropData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const calculateNutrients = () => {
-    // Add null checks for farmDetails and its properties
+    // Return default data if farmDetails or required properties are missing
     if (!farmDetails?.soil?.organicMatter || !farmDetails?.soil?.type) {
       return {
         nitrogen: data.nitrogen,
@@ -23,31 +23,37 @@ const CropMetrics = ({ data }: { data: CropData }) => {
       };
     }
 
-    const organicMatter = parseFloat(farmDetails.soil.organicMatter) || 0;
-    const soilQualityScore = organicMatter * 20;
+    try {
+      const organicMatter = parseFloat(farmDetails.soil.organicMatter) || 0;
+      const soilQualityScore = organicMatter * 20;
 
-    const soilTypeMultipliers: Record<string, number> = {
-      clay: 1.2,
-      loam: 1.0,
-      sandy: 0.8,
-      silt: 1.1,
-      peat: 0.9
-    };
+      const soilTypeMultipliers: Record<string, number> = {
+        clay: 1.2,
+        loam: 1.0,
+        sandy: 0.8,
+        silt: 1.1,
+        peat: 0.9
+      };
 
-    const soilType = farmDetails.soil.type.toLowerCase();
-    const soilMultiplier = soilTypeMultipliers[soilType] || 1.0;
+      // Safely access soil type with null check and default
+      const soilType = (farmDetails.soil?.type || "").toLowerCase();
+      const soilMultiplier = soilTypeMultipliers[soilType] || 1.0;
 
-    const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
-    const phosphorus = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.6));
-    const potassium = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.7));
-    const healthScore = Math.round((nitrogen + phosphorus + potassium) / 3);
+      const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
+      const phosphorus = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.6));
+      const potassium = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.7));
+      const healthScore = Math.round((nitrogen + phosphorus + potassium) / 3);
 
-    return {
-      nitrogen,
-      phosphorus,
-      potassium,
-      healthScore
-    };
+      return {
+        nitrogen,
+        phosphorus,
+        potassium,
+        healthScore
+      };
+    } catch (error) {
+      console.error("Error calculating nutrients:", error);
+      return data; // Return original data if calculation fails
+    }
   };
 
   const nutrients = calculateNutrients();

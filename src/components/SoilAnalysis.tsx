@@ -19,24 +19,33 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
       return data.moisture;
     }
     
-    const drainageFactors: Record<string, number> = {
-      poor: 85,
-      moderate: 65,
-      well: 45
-    };
-    
-    const soilTypeFactors: Record<string, number> = {
-      clay: 80,
-      loam: 60,
-      sandy: 40,
-      silt: 70,
-      peat: 90
-    };
-    
-    const drainageFactor = drainageFactors[farmDetails.soil.drainage.toLowerCase()] || 65;
-    const soilTypeFactor = soilTypeFactors[farmDetails.soil.type.toLowerCase()] || 60;
-    
-    return Math.round((drainageFactor + soilTypeFactor) / 2);
+    try {
+      const drainageFactors: Record<string, number> = {
+        poor: 85,
+        moderate: 65,
+        well: 45
+      };
+      
+      const soilTypeFactors: Record<string, number> = {
+        clay: 80,
+        loam: 60,
+        sandy: 40,
+        silt: 70,
+        peat: 90
+      };
+      
+      // Safely access properties with null checks and defaults
+      const drainage = (farmDetails.soil?.drainage || "").toLowerCase();
+      const soilType = (farmDetails.soil?.type || "").toLowerCase();
+      
+      const drainageFactor = drainageFactors[drainage] || 65;
+      const soilTypeFactor = soilTypeFactors[soilType] || 60;
+      
+      return Math.round((drainageFactor + soilTypeFactor) / 2);
+    } catch (error) {
+      console.error("Error calculating moisture:", error);
+      return data.moisture;
+    }
   };
 
   const calculateTemperature = () => {
@@ -48,15 +57,22 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
       return data.ph;
     }
     
-    const soilTypePH: Record<string, number> = {
-      clay: 6.5,
-      loam: 6.8,
-      sandy: 6.0,
-      silt: 6.4,
-      peat: 5.5
-    };
-    
-    return soilTypePH[farmDetails.soil.type.toLowerCase()] || 6.5;
+    try {
+      const soilTypePH: Record<string, number> = {
+        clay: 6.5,
+        loam: 6.8,
+        sandy: 6.0,
+        silt: 6.4,
+        peat: 5.5
+      };
+      
+      // Safely access soil type with null check and default
+      const soilType = (farmDetails.soil?.type || "").toLowerCase();
+      return soilTypePH[soilType] || data.ph;
+    } catch (error) {
+      console.error("Error calculating pH:", error);
+      return data.ph;
+    }
   };
 
   const moisture = calculateMoisture();
