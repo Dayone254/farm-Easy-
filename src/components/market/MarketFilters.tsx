@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Filter, ChevronDown, ChevronUp } from "lucide-react";
+import { Filter, ChevronDown, ChevronUp, Search } from "lucide-react";
 
 interface MarketFiltersProps {
   selectedCategory: string;
@@ -12,6 +12,8 @@ interface MarketFiltersProps {
   setPriceRange: (range: string) => void;
   isFiltersOpen: boolean;
   setIsFiltersOpen: (isOpen: boolean) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const categories = [
@@ -36,11 +38,24 @@ const MarketFilters = ({
   setPriceRange,
   isFiltersOpen,
   setIsFiltersOpen,
+  searchQuery,
+  setSearchQuery,
 }: MarketFiltersProps) => {
   return (
-    <Card className="p-3">
+    <Card className="p-3 space-y-3">
+      <div className="relative">
+        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-8"
+        />
+      </div>
+
       <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold flex items-center gap-1">
             <Filter className="h-3 w-3" /> Filters
           </h3>

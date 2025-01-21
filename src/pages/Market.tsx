@@ -15,6 +15,7 @@ const CART_STORAGE_KEY = "cart_items";
 const Market = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [priceRange, setPriceRange] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isListingFormOpen, setIsListingFormOpen] = useState(false);
@@ -133,8 +134,17 @@ const Market = () => {
   };
 
   const filteredProducts = products.filter((product) => {
-    if (selectedCategory !== "all" && product.category !== selectedCategory) return false;
+    // Search filter
+    if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+    }
     
+    // Category filter
+    if (selectedCategory !== "all" && product.category !== selectedCategory) {
+      return false;
+    }
+    
+    // Price range filter
     if (priceRange === "under1000") return product.price < 1000;
     if (priceRange === "1000to5000") return product.price >= 1000 && product.price <= 5000;
     if (priceRange === "over5000") return product.price > 5000;
@@ -159,6 +169,8 @@ const Market = () => {
             setPriceRange={setPriceRange}
             isFiltersOpen={isFiltersOpen}
             setIsFiltersOpen={setIsFiltersOpen}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
         </div>
 
