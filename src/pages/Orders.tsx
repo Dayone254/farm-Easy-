@@ -11,96 +11,45 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import FinancialSummary from "@/components/FinancialSummary";
 import OrdersTable from "@/components/OrdersTable";
 import { useUser } from "@/contexts/UserContext";
-
-interface Order {
-  id: string;
-  buyer: string;
-  seller: string;
-  items: string;
-  status: "Pending" | "In Transit" | "Delivered" | "Cancelled" | "Payment Held" | "Payment Released";
-  location: string;
-  price: number;
-  paymentStatus: "Pending" | "In Escrow" | "Released" | "Refunded";
-}
+import { useOrders, useUpdateOrderStatus } from "@/utils/ordersApi";
 
 const Orders = () => {
   const { toast } = useToast();
   const [viewType, setViewType] = useState<"buying" | "selling">("buying");
   const { userProfile } = useUser();
-  const queryClient = useQueryClient();
+  
+  // Fetch orders using our new hook
+  const { 
+    data: orders = [], 
+    isLoading,
+    error 
+  } = useOrders(viewType, userProfile?.id);
 
-  // Fetch orders using React Query
-  const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['orders', viewType, userProfile?.id],
-    queryFn: async () => {
-      console.log('Fetching orders for user:', userProfile?.id, 'viewType:', viewType);
-      // Simulate API call - replace with actual API endpoint
-      const response = await fetch(`/api/orders/${userProfile?.id}?type=${viewType}`).catch(() => {
-        // Fallback data for demo purposes - remove this in production
-        console.log('Using fallback order data');
-        return {
-          json: async () => ([
-            {
-              id: `ORD${Date.now()}1`,
-              buyer: userProfile?.name || "Unknown",
-              seller: "Farm Fresh Co.",
-              items: "Wheat (50kg)",
-              status: "Pending",
-              location: userProfile?.location || "Unknown",
-              price: 2500,
-              paymentStatus: "In Escrow",
-            },
-            {
-              id: `ORD${Date.now()}2`,
-              buyer: userProfile?.name || "Unknown",
-              seller: "Green Fields",
-              items: "Rice (100kg)",
-              status: "In Transit",
-              location: userProfile?.location || "Unknown",
-              price: 5000,
-              paymentStatus: "In Escrow",
-            }
-          ])
-        };
-      });
-      const data = await response.json();
-      console.log('Received orders:', data);
-      return data;
-    },
-    enabled: !!userProfile?.id,
-    refetchInterval: 30000, // Refetch every 30 seconds
-  });
+  // Use the new mutation for updating order status
+  const updateOrderStatus = useUpdateOrderStatus();
 
-  // Update order status mutation
-  const updateOrderStatus = useMutation({
-    mutationFn: async ({ orderId, newStatus }: { orderId: string; newStatus: Order['status'] }) => {
-      console.log('Updating order status:', orderId, newStatus);
-      // Simulate API call - replace with actual API endpoint
-      const response = await fetch(`/api/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      }).catch(() => {
-        console.log('Using mock update response');
-        return { ok: true };
-      });
-      return response.ok;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      toast({
-        title: "Order Updated",
-        description: "The order status has been successfully updated.",
-      });
-    },
-  });
-
-  const handleStatusChange = (orderId: string, newStatus: Order['status']) => {
-    updateOrderStatus.mutate({ orderId, newStatus });
+  const handleStatusChange = (orderId: string, newStatus: Order["status"]) => {
+    updateOrderStatus.mutate(
+      { orderId, newStatus },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Order Updated",
+            description: "The order status has been successfully updated.",
+          });
+        },
+        onError: () => {
+          toast({
+            title: "Update Failed",
+            description: "Failed to update the order status. Please try again.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   const calculateFinancials = () => {
@@ -150,8 +99,20 @@ const Orders = () => {
 
   const { totalSpent, totalEarned } = calculateFinancials();
 
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-destructive">Error loading orders. Please try again.</p>
+      </div>
+    );
+  }
+
   if (isLoading) {
-    return <div className="flex justify-center items-center h-64">Loading orders...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        Loading orders...
+      </div>
+    );
   }
 
   return (

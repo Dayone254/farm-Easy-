@@ -20,6 +20,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { formatCurrency } from "@/utils/currency";
+import { createOrder } from "@/utils/ordersApi";
 
 interface CartItem {
   id: number;
@@ -75,17 +76,19 @@ const CartDrawer = ({ open, onClose, items, onRemoveItem, onOrderCreated }: Cart
       // Simulate payment confirmation
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Create order objects for each item
-      const orders = items.map(item => ({
-        id: `ORD${Date.now()}${Math.floor(Math.random() * 1000)}`,
-        buyer: userProfile?.name || "Unknown Buyer",
-        seller: item.seller.name,
-        items: item.name,
-        status: "Pending",
-        location: userProfile?.location || "Unknown Location",
-        price: item.price,
-        paymentStatus: "In Escrow",
-      }));
+      // Create order objects for each item using the new createOrder function
+      const orders = items.map(item => {
+        const order = createOrder({
+          buyer: userProfile?.name || "Unknown Buyer",
+          seller: item.seller.name,
+          items: item.name,
+          status: "Pending",
+          location: userProfile?.location || "Unknown Location",
+          price: item.price,
+          paymentStatus: "In Escrow",
+        });
+        return order;
+      });
 
       // Call the onOrderCreated callback with the new orders
       onOrderCreated(orders);
