@@ -29,7 +29,7 @@ const ProductCard = ({
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Convert IDs to strings for comparison
+  // Convert IDs to strings for consistent comparison
   const currentUserId = String(userProfile?.id || '');
   const sellerId = String(product.seller?.id || '');
   const isOwner = currentUserId === sellerId && currentUserId !== '';
@@ -75,6 +75,16 @@ const ProductCard = ({
         variant: "destructive",
         title: "Login Required",
         description: "Please login to add items to cart.",
+      });
+      return;
+    }
+
+    // Prevent adding own products to cart
+    if (isOwner) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Action",
+        description: "You cannot add your own products to cart.",
       });
       return;
     }
