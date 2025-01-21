@@ -27,7 +27,7 @@ const defaultProfile: UserProfile = {
   isVerified: false,
   profileImage: null,
   bio: "",
-  userType: "buyer",  // Changed default to buyer
+  userType: "buyer",
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -35,7 +35,15 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
     const saved = localStorage.getItem("userProfile");
-    return saved ? JSON.parse(saved) : defaultProfile;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Ensure userType is preserved from login selection
+      return {
+        ...defaultProfile,
+        ...parsed,
+      };
+    }
+    return defaultProfile;
   });
 
   const updateProfile = (newData: Partial<UserProfile>) => {
