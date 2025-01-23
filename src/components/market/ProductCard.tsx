@@ -31,6 +31,7 @@ const ProductCard = ({
   }, [product.id, isSaved]);
 
   useEffect(() => {
+    // Strict ownership check
     if (!userProfile?.id || !product.seller?.id) {
       setIsOwner(false);
       return;
@@ -38,6 +39,15 @@ const ProductCard = ({
 
     const currentUserId = String(userProfile.id);
     const sellerId = String(product.seller.id);
+    
+    console.log("ProductCard - Ownership Check:", {
+      productId: product.id,
+      productName: product.name,
+      currentUserId,
+      sellerId,
+      isOwner: currentUserId === sellerId
+    });
+    
     setIsOwner(currentUserId === sellerId);
   }, [userProfile, product.seller, product.id]);
 
