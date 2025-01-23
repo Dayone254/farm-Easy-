@@ -31,11 +31,18 @@ const ProductCard = ({
   }, [product.id, isSaved]);
 
   useEffect(() => {
-    // Strict ownership check with null safety
+    // Strict ownership check with enhanced null safety
     const currentUserId = userProfile?.id;
-    const sellerId = product.seller?.id;
+    const sellerId = product?.seller?.id;
 
     if (!currentUserId || !sellerId) {
+      console.log("ProductCard - Ownership Check Failed:", {
+        component: "ProductCard",
+        reason: "Missing IDs",
+        currentUserId,
+        sellerId,
+        productId: product.id
+      });
       setIsOwner(false);
       return;
     }
@@ -53,10 +60,10 @@ const ProductCard = ({
     });
     
     setIsOwner(isProductOwner);
-  }, [userProfile?.id, product.seller?.id, product.id, product.name]);
+  }, [userProfile?.id, product?.seller?.id, product.id, product.name]);
 
   const handleSaveProduct = () => {
-    if (!userProfile) {
+    if (!userProfile?.id) {
       toast({
         variant: "destructive",
         title: "Login Required",
@@ -90,7 +97,7 @@ const ProductCard = ({
       return;
     }
 
-    if (!product.seller) {
+    if (!product?.seller) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -207,14 +214,14 @@ const ProductCard = ({
 
         <div className="flex items-center justify-between border-t pt-4">
           <div className="flex items-center gap-2">
-            {product.seller && (
+            {product?.seller && (
               <div 
                 className="relative cursor-pointer group"
-                onClick={() => onSellerClick(product.seller)}
+                onClick={() => product.seller && onSellerClick(product.seller)}
               >
                 <Avatar className="h-10 w-10 ring-2 ring-accent/50 transition-all duration-300 group-hover:ring-accent">
                   <AvatarImage src={product.seller.profileImage} />
-                  <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
+                  <AvatarFallback>{product.seller.name?.[0] || '?'}</AvatarFallback>
                 </Avatar>
                 {product.seller.isVerified && (
                   <Badge variant="secondary" className="absolute -bottom-1 -right-1 h-5 scale-75">
