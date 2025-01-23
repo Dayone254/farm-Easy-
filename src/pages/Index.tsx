@@ -6,8 +6,10 @@ import OrdersTable from "../components/OrdersTable";
 import Marketplace from "../components/Marketplace";
 import MarketUpdates from "../components/MarketUpdates";
 import { useState } from "react";
+import { useFarmStore } from "@/stores/farmStore";
 
 const Index = () => {
+  const farmDetails = useFarmStore((state) => state.farmDetails);
   const [orders] = useState([
     {
       id: "ORD001",
@@ -23,12 +25,13 @@ const Index = () => {
 
   const [products, setProducts] = useState<any[]>([]);
 
+  // Initialize soil data with default values and merge with farm details if available
   const soilData = {
-    moisture: 70,
+    moisture: farmDetails?.soil?.type ? 70 : 0,
     temperature: 24,
-    ph: 6.8,
-    cropType: "Wheat",
-    growthStage: "Flowering",
+    ph: farmDetails?.soil?.type ? 6.8 : 0,
+    cropType: farmDetails?.crops?.[0]?.name || "Not specified",
+    growthStage: "Not specified",
     lastUpdated: new Date().toISOString()
   };
 
