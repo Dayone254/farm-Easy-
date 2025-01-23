@@ -8,6 +8,7 @@ import CartDrawer from "@/components/CartDrawer";
 import MarketFilters from "@/components/market/MarketFilters";
 import MarketHeader from "@/components/market/MarketHeader";
 import { useUser } from "@/contexts/UserContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const STORAGE_KEY = "marketplace_products";
 const CART_STORAGE_KEY = "cart_items";
@@ -24,6 +25,7 @@ const Market = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { userProfile } = useUser();
+  const savedProducts = userProfile?.savedProducts || [];
 
   // Load products and cart items from localStorage on component mount
   useEffect(() => {
@@ -187,11 +189,27 @@ const Market = () => {
               </Button>
             </div>
           )}
-          <Marketplace 
-            products={filteredProducts} 
-            setProducts={setProducts} 
-            onAddToCart={handleAddToCart}
-          />
+
+          <Tabs defaultValue="all" className="mb-6">
+            <TabsList>
+              <TabsTrigger value="all">All Products</TabsTrigger>
+              <TabsTrigger value="saved">Saved Products</TabsTrigger>
+            </TabsList>
+            <TabsContent value="all">
+              <Marketplace 
+                products={filteredProducts} 
+                setProducts={setProducts} 
+                onAddToCart={handleAddToCart}
+              />
+            </TabsContent>
+            <TabsContent value="saved">
+              <Marketplace 
+                products={savedProducts}
+                setProducts={setProducts}
+                onAddToCart={handleAddToCart}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useUser } from "@/contexts/UserContext";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +10,7 @@ import { formatCurrency } from "@/utils/currency";
 import { ProductCardProps } from "@/types/market";
 import ProductBuyerActions from "./ProductBuyerActions";
 import ProductOwnerActions from "./ProductOwnerActions";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 
 const ProductCard = ({ 
   product, 
@@ -17,11 +19,16 @@ const ProductCard = ({
   onSellerClick, 
   onAddToCart 
 }: ProductCardProps) => {
-  const { userProfile } = useUser();
+  const { userProfile, saveProduct, unsaveProduct, isSaved } = useUser();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    setSaved(isSaved(product.id));
+  }, [product.id, isSaved]);
 
   useEffect(() => {
     if (!userProfile?.id || !product.seller?.id) {
@@ -31,19 +38,33 @@ const ProductCard = ({
 
     const currentUserId = String(userProfile.id);
     const sellerId = String(product.seller.id);
-    
-    console.log("ProductCard - Ownership Check:", {
-      component: "ProductCard",
-      productId: product.id,
-      productName: product.name,
-      currentUserId,
-      sellerId,
-      isOwner: currentUserId === sellerId,
-      userProfile
-    });
-
     setIsOwner(currentUserId === sellerId);
-  }, [userProfile, product.seller, product.id, product.name]);
+  }, [userProfile, product.seller, product.id]);
+
+  const handleSaveProduct = () => {
+    if (!userProfile) {
+      toast({
+        variant: "destructive",
+        title: "Login Required",
+        description: "Please login to save products.",
+      });
+      return;
+    }
+
+    if (saved) {
+      unsaveProduct(product.id);
+      setSaved(false);
+      toast({
+        description: "Product removed from saved items",
+      });
+    } else {
+      saveProduct(product);
+      setSaved(true);
+      toast({
+        description: "Product saved for later",
+      });
+    }
+  };
 
   const handleContactSeller = () => {
     if (!userProfile) {
@@ -139,6 +160,18 @@ const ProductCard = ({
           alt={product.name}
           className="w-full h-full object-cover"
         />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+          onClick={handleSaveProduct}
+        >
+          {saved ? (
+            <BookmarkCheck className="h-5 w-5 text-primary" />
+          ) : (
+            <Bookmark className="h-5 w-5" />
+          )}
+        </Button>
       </div>
 
       <div className="p-4 space-y-4">
