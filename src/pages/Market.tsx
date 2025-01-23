@@ -152,6 +152,8 @@ const Market = () => {
     return true;
   });
 
+  const canListProducts = userProfile?.userType !== 'buyer';
+
   return (
     <div className="container mx-auto px-4 py-6">
       <MarketHeader 
@@ -175,14 +177,16 @@ const Market = () => {
         </div>
 
         <div className="lg:col-span-5">
-          <div className="mb-4 flex justify-end">
-            <Button 
-              onClick={() => setIsListingFormOpen(true)}
-              className="bg-accent hover:bg-accent/90"
-            >
-              List Product
-            </Button>
-          </div>
+          {canListProducts && (
+            <div className="mb-4 flex justify-end">
+              <Button 
+                onClick={() => setIsListingFormOpen(true)}
+                className="bg-accent hover:bg-accent/90"
+              >
+                List Product
+              </Button>
+            </div>
+          )}
           <Marketplace 
             products={filteredProducts} 
             setProducts={setProducts} 
