@@ -31,25 +31,29 @@ const ProductCard = ({
   }, [product.id, isSaved]);
 
   useEffect(() => {
-    // Strict ownership check
-    if (!userProfile?.id || !product.seller?.id) {
+    // Strict ownership check with null safety
+    const currentUserId = userProfile?.id;
+    const sellerId = product.seller?.id;
+
+    if (!currentUserId || !sellerId) {
       setIsOwner(false);
       return;
     }
 
-    const currentUserId = String(userProfile.id);
-    const sellerId = String(product.seller.id);
+    const isProductOwner = String(currentUserId) === String(sellerId);
     
     console.log("ProductCard - Ownership Check:", {
+      component: "ProductCard",
       productId: product.id,
       productName: product.name,
-      currentUserId,
-      sellerId,
-      isOwner: currentUserId === sellerId
+      currentUserId: String(currentUserId),
+      sellerId: String(sellerId),
+      isOwner: isProductOwner,
+      userProfile
     });
     
-    setIsOwner(currentUserId === sellerId);
-  }, [userProfile, product.seller, product.id]);
+    setIsOwner(isProductOwner);
+  }, [userProfile?.id, product.seller?.id, product.id, product.name]);
 
   const handleSaveProduct = () => {
     if (!userProfile) {
@@ -77,11 +81,20 @@ const ProductCard = ({
   };
 
   const handleContactSeller = () => {
-    if (!userProfile) {
+    if (!userProfile?.id) {
       toast({
         variant: "destructive",
         title: "Login Required",
         description: "Please login to message sellers.",
+      });
+      return;
+    }
+
+    if (!product.seller) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Seller information is not available.",
       });
       return;
     }
@@ -105,7 +118,7 @@ const ProductCard = ({
   };
 
   const handleAddToCart = () => {
-    if (!userProfile) {
+    if (!userProfile?.id) {
       toast({
         variant: "destructive",
         title: "Login Required",
@@ -194,31 +207,33 @@ const ProductCard = ({
 
         <div className="flex items-center justify-between border-t pt-4">
           <div className="flex items-center gap-2">
-            <div 
-              className="relative cursor-pointer group"
-              onClick={() => onSellerClick(product.seller)}
-            >
-              <Avatar className="h-10 w-10 ring-2 ring-accent/50 transition-all duration-300 group-hover:ring-accent">
-                <AvatarImage src={product.seller.profileImage} />
-                <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
-              </Avatar>
-              {product.seller.isVerified && (
-                <Badge variant="secondary" className="absolute -bottom-1 -right-1 h-5 scale-75">
-                  ✓
-                </Badge>
-              )}
-            </div>
+            {product.seller && (
+              <div 
+                className="relative cursor-pointer group"
+                onClick={() => onSellerClick(product.seller)}
+              >
+                <Avatar className="h-10 w-10 ring-2 ring-accent/50 transition-all duration-300 group-hover:ring-accent">
+                  <AvatarImage src={product.seller.profileImage} />
+                  <AvatarFallback>{product.seller.name[0]}</AvatarFallback>
+                </Avatar>
+                {product.seller.isVerified && (
+                  <Badge variant="secondary" className="absolute -bottom-1 -right-1 h-5 scale-75">
+                    ✓
+                  </Badge>
+                )}
+              </div>
+            )}
             <div className="flex flex-col">
               <span 
                 className="text-sm font-medium hover:text-accent cursor-pointer" 
-                onClick={() => onSellerClick(product.seller)}
+                onClick={() => product.seller && onSellerClick(product.seller)}
               >
-                {product.seller.name}
+                {product.seller?.name || "Unknown Seller"}
               </span>
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span>{product.seller.location}</span>
+                <span>{product.seller?.location || "Location unknown"}</span>
                 <span>•</span>
-                <span>{product.seller.previousSales?.length || 0} sales</span>
+                <span>{product.seller?.previousSales?.length || 0} sales</span>
               </div>
             </div>
           </div>
