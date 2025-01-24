@@ -9,45 +9,69 @@ interface CropData {
   healthScore: number;
 }
 
+interface NutrientLevels {
+  nitrogen: number;
+  phosphorus: number;
+  potassium: number;
+  healthScore: number;
+}
+
+const DEFAULT_NUTRIENTS: NutrientLevels = {
+  nitrogen: 0,
+  phosphorus: 0,
+  potassium: 0,
+  healthScore: 0
+};
+
+const SOIL_TYPE_MULTIPLIERS = {
+  clay: 1.2,
+  loam: 1.0,
+  sandy: 0.8,
+  silt: 1.1,
+  peat: 0.9
+} as const;
+
 const CropMetrics = ({ data }: { data: CropData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
-  const calculateNutrients = () => {
-    // Early return with default data if farmDetails is null or undefined
-    if (!farmDetails?.soil) {
-      console.log("Farm details or soil information is missing");
-      return {
-        nitrogen: data.nitrogen,
-        phosphorus: data.phosphorus,
-        potassium: data.potassium,
-        healthScore: data.healthScore
-      };
+  const calculateNutrients = (): NutrientLevels => {
+    // If no farm details exist, return the provided data
+    if (!farmDetails) {
+      console.log("No farm details available");
+      return { ...data };
+    }
+
+    // If no soil data exists, return the provided data
+    if (!farmDetails.soil) {
+      console.log("No soil information available");
+      return { ...data };
     }
 
     try {
-      // Ensure we have valid soil data
+      // Safely parse organic matter with fallback to 0
       const organicMatter = parseFloat(farmDetails.soil.organicMatter || "0");
-      const soilQualityScore = organicMatter * 20;
+      if (isNaN(organicMatter)) {
+        console.log("Invalid organic matter value");
+        return { ...data };
+      }
 
-      const soilTypeMultipliers: Record<string, number> = {
-        clay: 1.2,
-        loam: 1.0,
-        sandy: 0.8,
-        silt: 1.1,
-        peat: 0.9
-      };
+      // Calculate base soil quality score
+      const soilQualityScore = Math.max(0, Math.min(100, organicMatter * 20));
 
-      // Safely access soil type with fallback to default
-      const soilType = farmDetails.soil?.type?.toLowerCase() || "loam";
-      const soilMultiplier = soilTypeMultipliers[soilType as keyof typeof soilTypeMultipliers] || 1.0;
+      // Safely determine soil type and multiplier
+      const soilType = (farmDetails.soil.type || "").toLowerCase();
+      const soilMultiplier = soilType in SOIL_TYPE_MULTIPLIERS 
+        ? SOIL_TYPE_MULTIPLIERS[soilType as keyof typeof SOIL_TYPE_MULTIPLIERS]
+        : SOIL_TYPE_MULTIPLIERS.loam;
 
-      const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
-      const phosphorus = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.6));
-      const potassium = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.7));
+      // Calculate nutrient levels with bounds checking
+      const nitrogen = Math.min(100, Math.max(0, Math.round(soilQualityScore * soilMultiplier * 0.8)));
+      const phosphorus = Math.min(100, Math.max(0, Math.round(soilQualityScore * soilMultiplier * 0.6)));
+      const potassium = Math.min(100, Math.max(0, Math.round(soilQualityScore * soilMultiplier * 0.7)));
       const healthScore = Math.round((nitrogen + phosphorus + potassium) / 3);
 
-      console.log("Calculated nutrients with soil type:", soilType, "and multiplier:", soilMultiplier);
-
+      console.log(`Calculated nutrients for soil type: ${soilType}, multiplier: ${soilMultiplier}`);
+      
       return {
         nitrogen,
         phosphorus,
@@ -56,12 +80,7 @@ const CropMetrics = ({ data }: { data: CropData }) => {
       };
     } catch (error) {
       console.error("Error calculating nutrients:", error);
-      return {
-        nitrogen: data.nitrogen,
-        phosphorus: data.phosphorus,
-        potassium: data.potassium,
-        healthScore: data.healthScore
-      };
+      return { ...data };
     }
   };
 
