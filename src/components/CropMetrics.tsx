@@ -13,18 +13,14 @@ const CropMetrics = ({ data }: { data: CropData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const calculateNutrients = () => {
-    // Return default data if farmDetails or required properties are missing
-    if (!farmDetails?.soil?.organicMatter || !farmDetails?.soil?.type) {
-      return {
-        nitrogen: data.nitrogen,
-        phosphorus: data.phosphorus,
-        potassium: data.potassium,
-        healthScore: data.healthScore
-      };
+    // Early return with default data if farmDetails is null or undefined
+    if (!farmDetails?.soil) {
+      console.log("Farm details or soil information is missing");
+      return data;
     }
 
     try {
-      const organicMatter = parseFloat(farmDetails.soil.organicMatter) || 0;
+      const organicMatter = parseFloat(farmDetails.soil.organicMatter || "0");
       const soilQualityScore = organicMatter * 20;
 
       const soilTypeMultipliers: Record<string, number> = {
@@ -35,8 +31,8 @@ const CropMetrics = ({ data }: { data: CropData }) => {
         peat: 0.9
       };
 
-      // Safely access soil type with null check and default
-      const soilType = (farmDetails.soil?.type || "").toLowerCase();
+      // Default to 'loam' if soil type is missing or invalid
+      const soilType = ((farmDetails.soil?.type || "").toLowerCase() || "loam") as keyof typeof soilTypeMultipliers;
       const soilMultiplier = soilTypeMultipliers[soilType] || 1.0;
 
       const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
@@ -52,7 +48,7 @@ const CropMetrics = ({ data }: { data: CropData }) => {
       };
     } catch (error) {
       console.error("Error calculating nutrients:", error);
-      return data; // Return original data if calculation fails
+      return data;
     }
   };
 

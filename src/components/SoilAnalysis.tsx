@@ -15,7 +15,9 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const calculateMoisture = () => {
-    if (!farmDetails?.soil?.drainage || !farmDetails?.soil?.type) {
+    // Early return if no farm details or soil information
+    if (!farmDetails?.soil) {
+      console.log("Farm details or soil information is missing");
       return data.moisture;
     }
     
@@ -34,9 +36,9 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
         peat: 90
       };
       
-      // Safely access properties with null checks and defaults
-      const drainage = (farmDetails.soil?.drainage || "").toLowerCase();
-      const soilType = (farmDetails.soil?.type || "").toLowerCase();
+      // Default to moderate drainage and loam soil if values are missing
+      const drainage = ((farmDetails.soil?.drainage || "").toLowerCase() || "moderate") as keyof typeof drainageFactors;
+      const soilType = ((farmDetails.soil?.type || "").toLowerCase() || "loam") as keyof typeof soilTypeFactors;
       
       const drainageFactor = drainageFactors[drainage] || 65;
       const soilTypeFactor = soilTypeFactors[soilType] || 60;
@@ -54,6 +56,7 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
 
   const calculatePH = () => {
     if (!farmDetails?.soil?.type) {
+      console.log("Soil type is missing");
       return data.ph;
     }
     
@@ -66,8 +69,8 @@ const SoilAnalysis = ({ data }: { data: SoilData }) => {
         peat: 5.5
       };
       
-      // Safely access soil type with null check and default
-      const soilType = (farmDetails.soil?.type || "").toLowerCase();
+      // Default to loam if soil type is missing or invalid
+      const soilType = ((farmDetails.soil?.type || "").toLowerCase() || "loam") as keyof typeof soilTypePH;
       return soilTypePH[soilType] || data.ph;
     } catch (error) {
       console.error("Error calculating pH:", error);

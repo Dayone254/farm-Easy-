@@ -6,28 +6,29 @@ const generateHistoricalData = (farmDetails: any) => {
   const data = [];
   const now = new Date();
   
-  // Base values from farm details
-  const baseMoisture = farmDetails?.soil?.drainage === 'poor' ? 80 : 
-                      farmDetails?.soil?.drainage === 'moderate' ? 65 : 50;
+  // Default values if farm details are missing
+  const baseMoisture = !farmDetails?.soil?.drainage ? 65 :
+                      farmDetails.soil.drainage === 'poor' ? 80 : 
+                      farmDetails.soil.drainage === 'moderate' ? 65 : 50;
   
-  const baseTemp = 25; // Base temperature
-  const basePH = farmDetails?.soil?.type === 'clay' ? 6.5 :
-                 farmDetails?.soil?.type === 'sandy' ? 6.0 :
-                 farmDetails?.soil?.type === 'loam' ? 6.8 : 6.5;
+  const baseTemp = 25;
+  const basePH = !farmDetails?.soil?.type ? 6.5 :
+                 farmDetails.soil.type === 'clay' ? 6.5 :
+                 farmDetails.soil.type === 'sandy' ? 6.0 :
+                 farmDetails.soil.type === 'loam' ? 6.8 : 6.5;
 
   // Generate data points with slight variations
   for (let i = 6; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
     
-    // Add random variations to base values
-    const variation = Math.random() * 10 - 5; // Random number between -5 and 5
+    const variation = Math.random() * 10 - 5;
     
     data.push({
       date: date.toLocaleDateString(),
       moisture: Math.max(0, Math.min(100, baseMoisture + variation)),
-      temperature: baseTemp + (Math.random() * 4 - 2), // Vary by ±2°C
-      ph: Number((basePH + (Math.random() * 0.4 - 0.2)).toFixed(1)) // Vary by ±0.2
+      temperature: baseTemp + (Math.random() * 4 - 2),
+      ph: Number((basePH + (Math.random() * 0.4 - 0.2)).toFixed(1))
     });
   }
   
@@ -36,14 +37,16 @@ const generateHistoricalData = (farmDetails: any) => {
 
 const SoilHealthChart = ({ data: currentData }: { data: any }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
-  const historicalData = generateHistoricalData(farmDetails);
   
-  // Add current data point
+  // Generate historical data with null-safe farm details
+  const historicalData = generateHistoricalData(farmDetails || {});
+  
+  // Add current data point with null checks
   historicalData.push({
     date: new Date().toLocaleDateString(),
-    moisture: currentData.moisture,
-    temperature: currentData.temperature,
-    ph: currentData.ph
+    moisture: currentData?.moisture || 0,
+    temperature: currentData?.temperature || 25,
+    ph: currentData?.ph || 6.5
   });
 
   return (
