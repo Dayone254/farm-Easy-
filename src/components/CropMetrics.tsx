@@ -16,10 +16,16 @@ const CropMetrics = ({ data }: { data: CropData }) => {
     // Early return with default data if farmDetails is null or undefined
     if (!farmDetails?.soil) {
       console.log("Farm details or soil information is missing");
-      return data;
+      return {
+        nitrogen: data.nitrogen,
+        phosphorus: data.phosphorus,
+        potassium: data.potassium,
+        healthScore: data.healthScore
+      };
     }
 
     try {
+      // Ensure we have valid soil data
       const organicMatter = parseFloat(farmDetails.soil.organicMatter || "0");
       const soilQualityScore = organicMatter * 20;
 
@@ -31,14 +37,16 @@ const CropMetrics = ({ data }: { data: CropData }) => {
         peat: 0.9
       };
 
-      // Default to 'loam' if soil type is missing or invalid
-      const soilType = ((farmDetails.soil?.type || "").toLowerCase() || "loam") as keyof typeof soilTypeMultipliers;
-      const soilMultiplier = soilTypeMultipliers[soilType] || 1.0;
+      // Safely access soil type with fallback to default
+      const soilType = farmDetails.soil?.type?.toLowerCase() || "loam";
+      const soilMultiplier = soilTypeMultipliers[soilType as keyof typeof soilTypeMultipliers] || 1.0;
 
       const nitrogen = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.8));
       const phosphorus = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.6));
       const potassium = Math.min(100, Math.round(soilQualityScore * soilMultiplier * 0.7));
       const healthScore = Math.round((nitrogen + phosphorus + potassium) / 3);
+
+      console.log("Calculated nutrients with soil type:", soilType, "and multiplier:", soilMultiplier);
 
       return {
         nitrogen,
@@ -48,7 +56,12 @@ const CropMetrics = ({ data }: { data: CropData }) => {
       };
     } catch (error) {
       console.error("Error calculating nutrients:", error);
-      return data;
+      return {
+        nitrogen: data.nitrogen,
+        phosphorus: data.phosphorus,
+        potassium: data.potassium,
+        healthScore: data.healthScore
+      };
     }
   };
 
