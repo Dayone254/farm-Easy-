@@ -5,11 +5,22 @@ import CommunityForum from "../components/CommunityForum";
 import OrdersTable from "../components/OrdersTable";
 import Marketplace from "../components/Marketplace";
 import MarketUpdates from "../components/MarketUpdates";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFarmStore } from "@/stores/farmStore";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
+  const { toast } = useToast();
+  const [soilData, setSoilData] = useState({
+    moisture: 0,
+    temperature: 24,
+    ph: 0,
+    cropType: "Not specified",
+    growthStage: "Not specified",
+    lastUpdated: new Date().toISOString()
+  });
+
   const [orders] = useState([
     {
       id: "ORD001",
@@ -25,15 +36,17 @@ const Index = () => {
 
   const [products, setProducts] = useState<any[]>([]);
 
-  // Initialize soil data with default values and merge with farm details if available
-  const soilData = {
-    moisture: farmDetails?.soil?.type ? 70 : 0,
-    temperature: 24,
-    ph: farmDetails?.soil?.type ? 6.8 : 0,
-    cropType: farmDetails?.crops?.[0]?.name || "Not specified",
-    growthStage: "Not specified",
-    lastUpdated: new Date().toISOString()
-  };
+  useEffect(() => {
+    // Only update soil data if farmDetails exists and has valid soil information
+    if (farmDetails?.soil) {
+      setSoilData(prevData => ({
+        ...prevData,
+        moisture: farmDetails.soil.type ? 70 : 0,
+        ph: farmDetails.soil.type ? 6.8 : 0,
+        cropType: farmDetails.crops?.[0]?.name || "Not specified",
+      }));
+    }
+  }, [farmDetails]);
 
   const handleStatusChange = (orderId: string, newStatus: "Pending" | "In Transit" | "Delivered" | "Cancelled" | "Payment Held" | "Payment Released") => {
     console.log(`Order ${orderId} status changed to ${newStatus}`);
@@ -42,6 +55,19 @@ const Index = () => {
   const handleAddToCart = (product: any) => {
     console.log("Add to cart functionality is only available in the Market page");
   };
+
+  // Early return if farm details are not loaded yet
+  if (!farmDetails) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary to-white p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <header className="text-center mb-12">
+            <h1 className="text-4xl font-bold mb-2 fade-up">Loading Farm Details...</h1>
+          </header>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary to-white p-6">
