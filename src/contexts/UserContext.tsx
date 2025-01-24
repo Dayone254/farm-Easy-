@@ -22,6 +22,7 @@ interface UserContextType {
   saveProduct: (product: Product) => void;
   unsaveProduct: (productId: string | number) => void;
   isSaved: (productId: string | number) => boolean;
+  logout: () => void;
 }
 
 const defaultProfile: UserProfile = {
@@ -40,16 +41,20 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
+    // Only load from localStorage if there's a complete profile
     const saved = localStorage.getItem("userProfile");
     if (saved) {
       const parsed = JSON.parse(saved);
-      return {
-        ...defaultProfile,
-        ...parsed,
-        savedProducts: parsed.savedProducts || [],
-      };
+      // Only consider the user as logged in if they have completed their profile
+      if (parsed.name && parsed.phoneNumber && parsed.location) {
+        return {
+          ...defaultProfile,
+          ...parsed,
+          savedProducts: parsed.savedProducts || [],
+        };
+      }
     }
-    return defaultProfile;
+    return null;
   });
 
   const updateProfile = (newData: Partial<UserProfile>) => {
@@ -85,6 +90,11 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return userProfile?.savedProducts.some(p => p.id === productId) || false;
   };
 
+  const logout = () => {
+    localStorage.removeItem("userProfile");
+    setUserProfile(null);
+  };
+
   const isProfileComplete = Boolean(
     userProfile &&
     userProfile.name &&
@@ -99,7 +109,8 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isProfileComplete,
       saveProduct,
       unsaveProduct,
-      isSaved
+      isSaved,
+      logout
     }}>
       {children}
     </UserContext.Provider>
