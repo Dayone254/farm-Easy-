@@ -26,9 +26,16 @@ const ProductCard = ({
   const [isOwner, setIsOwner] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // Validate product object
+  if (!product) {
+    console.error("ProductCard: Product object is null or undefined");
+    return null;
+  }
+
   useEffect(() => {
+    if (!product?.id) return;
     setSaved(isSaved(product.id));
-  }, [product.id, isSaved]);
+  }, [product?.id, isSaved]);
 
   useEffect(() => {
     // Strict ownership check with enhanced null safety
@@ -41,7 +48,7 @@ const ProductCard = ({
         reason: "Missing IDs",
         currentUserId,
         sellerId,
-        productId: product.id
+        productId: product?.id
       });
       setIsOwner(false);
       return;
@@ -51,8 +58,8 @@ const ProductCard = ({
     
     console.log("ProductCard - Ownership Check:", {
       component: "ProductCard",
-      productId: product.id,
-      productName: product.name,
+      productId: product?.id,
+      productName: product?.name,
       currentUserId: String(currentUserId),
       sellerId: String(sellerId),
       isOwner: isProductOwner,
@@ -60,7 +67,7 @@ const ProductCard = ({
     });
     
     setIsOwner(isProductOwner);
-  }, [userProfile?.id, product?.seller?.id, product.id, product.name]);
+  }, [userProfile?.id, product?.seller?.id, product?.id, product?.name]);
 
   const handleSaveProduct = () => {
     if (!userProfile?.id) {
@@ -68,6 +75,15 @@ const ProductCard = ({
         variant: "destructive",
         title: "Login Required",
         description: "Please login to save products.",
+      });
+      return;
+    }
+
+    if (!product) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Product information is not available.",
       });
       return;
     }
@@ -134,6 +150,15 @@ const ProductCard = ({
       return;
     }
 
+    if (!product?.seller) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Seller information is not available.",
+      });
+      return;
+    }
+
     if (isOwner) {
       toast({
         variant: "destructive",
@@ -147,6 +172,8 @@ const ProductCard = ({
   };
 
   const handleRemoveProduct = async () => {
+    if (!product?.id) return;
+    
     try {
       setIsLoading(true);
       await onRemove(product.id);
@@ -165,6 +192,8 @@ const ProductCard = ({
   };
 
   const handleMarkAsSold = async () => {
+    if (!product?.id) return;
+
     try {
       setIsLoading(true);
       await onMarkAsSold(product.id);
@@ -181,6 +210,12 @@ const ProductCard = ({
       setIsLoading(false);
     }
   };
+
+  // Early return if essential product data is missing
+  if (!product?.name || !product?.price) {
+    console.error("ProductCard: Essential product data is missing", { product });
+    return null;
+  }
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow relative animate-fade-up">
