@@ -44,16 +44,28 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Only load from localStorage if there's a complete profile
     const saved = localStorage.getItem("userProfile");
     if (saved) {
-      const parsed = JSON.parse(saved);
-      // Only consider the user as logged in if they have completed their profile
-      if (parsed.name && parsed.phoneNumber && parsed.location) {
-        return {
-          ...defaultProfile,
-          ...parsed,
-          savedProducts: parsed.savedProducts || [],
-        };
+      try {
+        const parsed = JSON.parse(saved);
+        // Only consider the user as logged in if they have completed their profile
+        if (parsed.name && parsed.phoneNumber && parsed.location) {
+          console.log("Found complete profile, logging in:", parsed.name);
+          return {
+            ...defaultProfile,
+            ...parsed,
+            savedProducts: parsed.savedProducts || [],
+          };
+        } else {
+          console.log("Incomplete profile found, requiring login");
+          localStorage.removeItem("userProfile"); // Clear incomplete profile
+          return null;
+        }
+      } catch (error) {
+        console.error("Error parsing user profile:", error);
+        localStorage.removeItem("userProfile");
+        return null;
       }
     }
+    console.log("No profile found, requiring login");
     return null;
   });
 
@@ -91,6 +103,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    console.log("Logging out user");
     localStorage.removeItem("userProfile");
     setUserProfile(null);
   };

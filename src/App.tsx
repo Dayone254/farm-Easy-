@@ -15,14 +15,23 @@ import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
 import Login from "./pages/Login";
 import { useUser } from "./contexts/UserContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { userProfile } = useUser();
-  if (!userProfile?.name) {
-    return <Navigate to="/login" replace />;
+  const { userProfile, isProfileComplete } = useUser();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!isProfileComplete) {
+      console.log("Incomplete profile, redirecting to login");
+    }
+  }, [isProfileComplete]);
+
+  if (!userProfile || !isProfileComplete) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
+
   return <>{children}</>;
 };
 
@@ -46,10 +55,11 @@ const pageTransition = {
 
 const AppRoutes = () => {
   const location = useLocation();
+  const { userProfile } = useUser();
   
   return (
     <div className="min-h-screen bg-[#F5F5DC] relative">
-      <Navigation />
+      {userProfile && <Navigation />}
       <AnimatePresence mode="sync" initial={false}>
         <motion.main
           key={location.pathname}
