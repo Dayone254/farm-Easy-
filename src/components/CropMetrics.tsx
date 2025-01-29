@@ -1,7 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Leaf } from "lucide-react";
 import { useFarmStore } from "@/stores/farmStore";
-import { calculateNutrients } from "@/utils/nutrientCalculations";
+import { calculateNutrients, DEFAULT_NUTRIENTS } from "@/utils/nutrientCalculations";
 import NutrientBar from "./NutrientBar";
 import HealthScore from "./HealthScore";
 
@@ -14,7 +14,12 @@ interface CropData {
 
 const CropMetrics = ({ data }: { data: CropData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
-  const nutrients = calculateNutrients(farmDetails);
+  
+  // Calculate nutrients with null-safe utility
+  const nutrients = calculateNutrients(farmDetails) || DEFAULT_NUTRIENTS;
+
+  console.log("Farm details in CropMetrics:", farmDetails);
+  console.log("Calculated nutrients:", nutrients);
 
   return (
     <Card className="hover:shadow-lg transition-shadow">

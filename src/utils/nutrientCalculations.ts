@@ -12,38 +12,51 @@ export const DEFAULT_NUTRIENTS: NutrientLevels = {
   healthScore: 0
 };
 
-const SOIL_TYPE_MULTIPLIERS = {
+const SOIL_TYPE_MULTIPLIERS: Record<string, number> = {
   clay: 1.2,
   loam: 1.0,
   sandy: 0.8,
   silt: 1.1,
   peat: 0.9
-} as const;
+};
 
-export const calculateNutrients = (farmDetails: any): NutrientLevels => {
-  if (!farmDetails?.soil) {
-    console.log("No farm details or soil information available");
+export const calculateNutrients = (farmDetails: any | null): NutrientLevels => {
+  // Early return if farmDetails is null or undefined
+  if (!farmDetails) {
+    console.log("Farm details are null or undefined");
+    return DEFAULT_NUTRIENTS;
+  }
+
+  // Early return if soil information is missing
+  if (!farmDetails.soil) {
+    console.log("Soil information is missing");
     return DEFAULT_NUTRIENTS;
   }
 
   try {
-    const soilType = farmDetails.soil?.type?.toLowerCase() || '';
+    // Safely access soil type with fallback
+    const soilType = (farmDetails.soil?.type || "").toLowerCase();
+    
+    // Early return if no soil type
     if (!soilType) {
       console.log("No soil type specified");
       return DEFAULT_NUTRIENTS;
     }
 
+    // Safely parse organic matter with fallback
     const organicMatter = parseFloat(farmDetails.soil?.organicMatter || "0");
     if (isNaN(organicMatter)) {
       console.log("Invalid organic matter value");
       return DEFAULT_NUTRIENTS;
     }
 
+    // Calculate base soil quality score
     const soilQualityScore = Math.max(0, Math.min(100, organicMatter * 20));
-    const soilMultiplier = soilType in SOIL_TYPE_MULTIPLIERS 
-      ? SOIL_TYPE_MULTIPLIERS[soilType as keyof typeof SOIL_TYPE_MULTIPLIERS]
-      : SOIL_TYPE_MULTIPLIERS.loam;
+    
+    // Get soil multiplier with fallback to loam
+    const soilMultiplier = SOIL_TYPE_MULTIPLIERS[soilType] || SOIL_TYPE_MULTIPLIERS.loam;
 
+    // Calculate nutrient levels
     const nitrogen = Math.min(100, Math.max(0, Math.round(soilQualityScore * soilMultiplier * 0.8)));
     const phosphorus = Math.min(100, Math.max(0, Math.round(soilQualityScore * soilMultiplier * 0.6)));
     const potassium = Math.min(100, Math.max(0, Math.round(soilQualityScore * soilMultiplier * 0.7)));
