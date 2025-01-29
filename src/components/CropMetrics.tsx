@@ -35,31 +35,31 @@ const CropMetrics = ({ data }: { data: CropData }) => {
   const farmDetails = useFarmStore((state) => state.farmDetails);
 
   const calculateNutrients = (): NutrientLevels => {
-    // If no farm details exist, return the provided data
-    if (!farmDetails) {
-      console.log("No farm details available");
-      return { ...data };
-    }
-
-    // If no soil data exists, return the provided data
-    if (!farmDetails.soil) {
-      console.log("No soil information available");
-      return { ...data };
+    // Early return with default values if no farm details exist
+    if (!farmDetails?.soil) {
+      console.log("No farm details or soil information available");
+      return DEFAULT_NUTRIENTS;
     }
 
     try {
+      // Safely get soil type with null check
+      const soilType = farmDetails.soil?.type?.toLowerCase() || '';
+      if (!soilType) {
+        console.log("No soil type specified");
+        return DEFAULT_NUTRIENTS;
+      }
+
       // Safely parse organic matter with fallback to 0
-      const organicMatter = parseFloat(farmDetails.soil.organicMatter || "0");
+      const organicMatter = parseFloat(farmDetails.soil?.organicMatter || "0");
       if (isNaN(organicMatter)) {
         console.log("Invalid organic matter value");
-        return { ...data };
+        return DEFAULT_NUTRIENTS;
       }
 
       // Calculate base soil quality score
       const soilQualityScore = Math.max(0, Math.min(100, organicMatter * 20));
 
-      // Safely determine soil type and multiplier
-      const soilType = (farmDetails.soil.type || "").toLowerCase();
+      // Safely determine soil multiplier with type check
       const soilMultiplier = soilType in SOIL_TYPE_MULTIPLIERS 
         ? SOIL_TYPE_MULTIPLIERS[soilType as keyof typeof SOIL_TYPE_MULTIPLIERS]
         : SOIL_TYPE_MULTIPLIERS.loam;
@@ -80,7 +80,7 @@ const CropMetrics = ({ data }: { data: CropData }) => {
       };
     } catch (error) {
       console.error("Error calculating nutrients:", error);
-      return { ...data };
+      return DEFAULT_NUTRIENTS;
     }
   };
 
